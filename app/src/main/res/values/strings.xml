@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Dua Anak Mart</string>
+    <string name="splash_title">Dua Anak Mart</string>
+    <string name="splash_subtitle">Belanja hemat karya dua sahabat kecil</string>
+    <string name="action_cart">Keranjang</string>
+    <string name="action_checkout">Bayar</string>
+    <string name="cart_empty">Keranjang masih kosong</string>
+    <string name="total_label">Total</string>
+    <string name="add_to_cart">Tambah</string>
+    <string name="currency_rupiah">Rp</string>
+    <string name="google_maps_key">YOUR_API_KEY_HERE</string>
+    <string name="pay_now">Bayar</string>
+    <string name="distance_label">Jarak</string>
+    <string name="eta_label">Perkiraan tiba</string>
+    <string name="payment_title">Pilih Metode Pembayaran</string>
+    <string name="payment_bank">Transfer Bank</string>
+    <string name="payment_ewallet">E-Wallet</string>
+    <string name="payment_cod">Bayar di Tempat (COD)</string>
+    <string name="payment_confirm">Bayar Sekarang</string>
+    <string name="shipping_title">Pesanan dalam Pengiriman</string>
+    <string name="shipping_in_progress">Kurir sedang menuju lokasi Anda…</string>
+    <string name="va_number_label">Nomor Virtual Account</string>
+    <string name="copy">Salin</string>
+    <string name="copied">Disalin</string>
+</resources>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <!-- Brand palette -->
+    <color name="brand_primary">#1565C0</color>
+    <color name="brand_on_primary">#FFFFFF</color>
+    <color name="brand_secondary">#FF6F00</color>
+    <color name="brand_surface">#FAFAFA</color>
+    <color name="brand_on_surface">#1A1C1E</color>
+    <color name="primary">#FF2196F3</color>
+    <color name="primary_dark">#FF1976D2</color>
+    <color name="accent">#FFFF5722</color>
+    <color name="gray">#FF757575</color>
+    <color name="gray_light">#FFF5F5F5</color>
+    <color name="green">#FF4CAF50</color>
+    <color name="red">#FFF44336</color>
+    <color name="orange">#FFFF9800</color>
+    
+    <!-- Additional colors for shipping tracking -->
+    <color name="primary_color">#FF2196F3</color>
+    <color name="secondary_color">#FF757575</color>
+    <color name="success_color">#FF4CAF50</color>
+    <color name="warning_color">#FFFF9800</color>
+    <color name="error_color">#FFF44336</color>
+    <color name="background_overlay">#80000000</color>
+</resources>

@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Map Container -->
+    <FrameLayout
+        android:id="@+id/mapContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- OpenStreetMap View -->
+        <org.osmdroid.views.MapView
+            android:id="@+id/mapView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clickable="true" />
+
+        <!-- Loading Indicator -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="visible" />
+
+        <!-- Connection Status -->
+        <TextView
+            android:id="@+id/connectionStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|end"
+            android:layout_margin="16dp"
+            android:background="@drawable/status_background"
+            android:padding="8dp"
+            android:text="Menghubungkan..."
+            android:textColor="@android:color/white"
+            android:textSize="12sp" />
+
+    </FrameLayout>
+
+    <!-- Top App Bar -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        app:elevation="0dp">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/topAppBar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/primary_color"
+            app:navigationIcon="@drawable/ic_arrow_back"
+            app:title="Tracking Pengiriman"
+            app:titleTextColor="@android:color/white" />
+
+        <LinearLayout
+            android:id="@+id/routeInfoOverlay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|start"
+            android:layout_margin="16dp"
+            android:layout_marginTop="80dp"
+            android:background="@drawable/route_info_background"
+            android:orientation="vertical"
+            android:padding="12dp"
+            android:visibility="visible">
+
+            <TextView
+                android:id="@+id/routeDistance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Jarak: 2.5 km"
+                android:textColor="@android:color/white"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/routeTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Estimasi: 8 menit"
+                android:textColor="@android:color/white"
+                android:textSize="12sp" />
+
+        </LinearLayout>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Bottom Card with Driver Info -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/driverInfoCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_margin="16dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="8dp">
+
+        <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Status Header -->
+            <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+    <ImageView
+                    android:id="@+id/statusIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_truck_moving"
+                    app:tint="@color/primary_color" />
+
+                <TextView
+                    android:id="@+id/statusText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="Driver sedang dalam perjalanan"
+                    android:textSize="16sp"
+        android:textStyle="bold"
+                    android:textColor="@color/primary_color" />
+
+                <TextView
+                    android:id="@+id/etaText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="5 menit"
+                    android:textSize="14sp"
+                    android:textColor="@color/secondary_color"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <!-- Driver Details -->
+            <LinearLayout
+        android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+        android:layout_marginTop="12dp"
+                android:gravity="center_vertical">
+
+    <ImageView
+                    android:id="@+id/driverAvatar"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/ic_driver_avatar"
+                    android:background="@drawable/circle_background" />
+
+    <LinearLayout
+                    android:layout_width="0dp"
+        android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="12dp"
+                    android:orientation="vertical">
+
+        <TextView
+                        android:id="@+id/driverName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Ahmad Supriadi"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+
+                        <RatingBar
+                            android:id="@+id/driverRating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+                            android:numStars="5"
+                            android:rating="4.8"
+                            android:scaleX="0.7"
+                            android:scaleY="0.7"
+                            android:transformPivotX="0dp"
+                            android:transformPivotY="0dp"
+                            style="?android:attr/ratingBarStyleSmall" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:text="4.8"
+                            android:textSize="12sp"
+                            android:textColor="@color/secondary_color" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+        <TextView
+                    android:id="@+id/vehicleInfo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+                    android:text="B 1234 ABC\nMerah - Box Truck"
+                    android:textSize="12sp"
+                    android:textColor="@color/secondary_color"
+                    android:gravity="end" />
+
+            </LinearLayout>
+
+            <!-- Action Buttons -->
+            <LinearLayout
+        android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="16dp">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCallDriver"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:text="Telepon"
+                    android:textColor="@android:color/white"
+                    app:icon="@drawable/ic_phone"
+                    app:iconTint="@android:color/white"
+                    style="@style/Widget.Material3.Button" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnChatDriver"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:text="Chat"
+                    android:textColor="@color/primary_color"
+                    app:icon="@drawable/ic_chat"
+                    app:iconTint="@color/primary_color"
+                    style="@style/Widget.Material3.Button.OutlinedButton" />
+
+    </LinearLayout>
+
+</LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Route Info Overlay -->
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+
