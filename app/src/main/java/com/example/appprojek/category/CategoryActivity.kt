@@ -88,14 +88,14 @@ class CategoryActivity : AppCompatActivity() {
                                 "Air Mineral 600ml",
                                 3000,
                                 description = "Air mineral kemasan botol",
-                                imageResId = R.drawable.airMineral
+                                imageResId = R.drawable.airmineral
                         ),
                         Product(
                                 "p13",
                                 "Yogurt Strawberry",
                                 12000,
                                 description = "Yogurt rasa strawberry",
-                                imageResId = R.drawable.yogurtStrawberry
+                                imageResId = R.drawable.yogurtstrawberry
                         ),
                         Product("p15", "Jus Jeruk", 8000, description = "Jus jeruk segar"),
 
@@ -115,8 +115,8 @@ class CategoryActivity : AppCompatActivity() {
                                 description = "Beras premium kualitas terbaik",
                                 imageResId = R.drawable.beras_premium
                         ),
-                        Product("p11", "Sosis Ayam", 25000, description = "Sosis ayam berkualitas", imageResId = R.drawable.sosisAyam),
-                        Product("p12", "Keju Cheddar", 35000, description = "Keju cheddar asli", imageResId = R.drawable.Keju),
+                        Product("p11", "Sosis Ayam", 25000, description = "Sosis ayam berkualitas", imageResId = R.drawable.sosisayam),
+                        Product("p12", "Keju Cheddar", 35000, description = "Keju cheddar asli", imageResId = R.drawable.keju),
 
                         // Snack & Camilan
                         Product("p6", "Snack Kentang", 12000, description = "Snack kentang renyah", imageResId = R.drawable.snack_kentang),
@@ -125,7 +125,7 @@ class CategoryActivity : AppCompatActivity() {
                                 "Biskuit Coklat",
                                 15000,
                                 description = "Biskuit dengan coklat premium",
-                                imageResId = R.drawable.biskuitCoklat
+                                imageResId = R.drawable.biskuit_coklat
                         ),
                         Product(
                                 "p14",
@@ -134,7 +134,7 @@ class CategoryActivity : AppCompatActivity() {
                                 description = "Cereal untuk sarapan sehat",
                                 imageResId = R.drawable.cereal
                         ),
-                        Product("p16", "Kerupuk Udang", 18000, description = "Kerupuk udang renyah", imageResId = R.drawable.Kerupuk_Udang)
+                        Product("p16", "Kerupuk Udang", 18000, description = "Kerupuk udang renyah", imageResId = R.drawable.kerupuk_udang)
                 )
         )
     }
