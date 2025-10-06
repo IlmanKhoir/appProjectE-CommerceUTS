@@ -38,6 +38,7 @@ class OrderAdapter(private var orders: List<Order>, private val onOrderClick: (O
         private val totalAmountText: TextView = itemView.findViewById(R.id.tvTotalAmount)
         private val statusText: TextView = itemView.findViewById(R.id.tvStatus)
         private val itemCountText: TextView = itemView.findViewById(R.id.tvItemCount)
+        private val titleText: TextView? = itemView.findViewById(R.id.tvOrderTitle)
 
         fun bind(order: Order) {
             orderIdText.text = "Pesanan #${order.orderId}"
@@ -46,6 +47,14 @@ class OrderAdapter(private var orders: List<Order>, private val onOrderClick: (O
             statusText.text = getStatusText(order.status)
             statusText.setTextColor(getStatusColor(order.status))
             itemCountText.text = "${order.items.size} item"
+
+            // Set judul: nama item pertama + jumlah lainnya
+            val firstName = order.items.firstOrNull()?.product?.name
+            val others = (order.items.size - 1).coerceAtLeast(0)
+            val title = if (firstName != null) {
+                if (others > 0) "$firstName + $others lainnya" else firstName
+            } else "Pesanan"
+            titleText?.text = title
         }
 
         private fun formatDate(timestamp: Long): String {

@@ -34,13 +34,23 @@
                 android:id="@+id/tvStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/status_background"
-                android:padding="4dp"
                 android:text="Selesai"
-                android:textColor="@color/white"
+                android:textColor="@color/green"
+                android:textStyle="bold"
                 android:textSize="12sp" />
 
         </LinearLayout>
+
+        <!-- Title derived from first item name -->
+        <TextView
+            android:id="@+id/tvOrderTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nama Produk"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="4dp" />
 
         <TextView
             android:id="@+id/tvOrderDate"

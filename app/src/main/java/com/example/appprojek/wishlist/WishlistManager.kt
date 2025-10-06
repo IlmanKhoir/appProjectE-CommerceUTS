@@ -6,10 +6,12 @@ import com.example.appprojek.model.Product
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
-class WishlistManager(private val context: Context) {
+class WishlistManager(private val context: Context, private val userId: String = "guest") {
     private val prefs: SharedPreferences =
             context.getSharedPreferences("wishlist_prefs", Context.MODE_PRIVATE)
     private val gson = Gson()
+
+    private fun key(): String = "wishlist_" + userId
 
     fun addToWishlist(product: Product) {
         val wishlist = getWishlist().toMutableList()
@@ -30,7 +32,7 @@ class WishlistManager(private val context: Context) {
     }
 
     fun getWishlist(): List<Product> {
-        val wishlistJson = prefs.getString("wishlist", null)
+        val wishlistJson = prefs.getString(key(), null)
         return if (wishlistJson != null) {
             val type = object : TypeToken<List<Product>>() {}.type
             gson.fromJson(wishlistJson, type) ?: emptyList()
@@ -40,11 +42,11 @@ class WishlistManager(private val context: Context) {
     }
 
     fun clearWishlist() {
-        prefs.edit().remove("wishlist").apply()
+        prefs.edit().remove(key()).apply()
     }
 
     private fun saveWishlist(wishlist: List<Product>) {
         val wishlistJson = gson.toJson(wishlist)
-        prefs.edit().putString("wishlist", wishlistJson).apply()
+        prefs.edit().putString(key(), wishlistJson).apply()
     }
 }

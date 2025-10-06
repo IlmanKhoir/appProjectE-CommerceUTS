@@ -15,8 +15,10 @@ class ShippingActivity : AppCompatActivity() {
 
                 // Navigate to tracking activity when user wants to track
                 // This is a simple activity that redirects to the tracking page
-                val intent = Intent(this, ShippingTrackingActivity::class.java)
-                startActivity(intent)
+                val orderId = intent.getStringExtra("order_id")
+                val i = Intent(this, com.example.appprojek.shipping.ShippingTrackingActivity::class.java)
+                if (orderId != null) i.putExtra("order_id", orderId)
+                startActivity(i)
                 finish()
         }
 }

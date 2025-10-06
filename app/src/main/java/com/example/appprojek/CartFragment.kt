@@ -43,7 +43,7 @@ class CartFragment : Fragment() {
             startActivity(
                     android.content.Intent(
                             requireContext(),
-                            com.example.appprojek.PaymentActivity::class.java
+                            com.example.appprojek.payment.PaymentActivity::class.java
                     )
             )
         }

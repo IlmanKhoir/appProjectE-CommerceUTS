@@ -24,7 +24,7 @@
             android:name=".MainActivity"
             android:exported="false" />
         <activity
-            android:name=".CartActivity"
+            android:name=".cart.CartActivity"
             android:exported="false" />
         <activity
             android:name=".SplashActivity"
@@ -37,16 +37,13 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".TrackingActivity"
-            android:exported="false" />
-        <activity
-            android:name=".PaymentActivity"
+            android:name=".payment.PaymentActivity"
             android:exported="false" />
         <activity
             android:name=".ShippingActivity"
             android:exported="false" />
         <activity
-            android:name=".OrderSummaryActivity"
+            android:name=".order.OrderSummaryActivity"
             android:exported="false" />
         <activity
             android:name=".auth.LoginActivity"
@@ -56,6 +53,9 @@
             android:exported="false" />
         <activity
             android:name=".profile.ProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".profile.EditProfileActivity"
             android:exported="false" />
         <activity
             android:name=".search.SearchActivity"
@@ -73,6 +73,9 @@
             android:name=".order.OrderHistoryActivity"
             android:exported="false" />
         <activity
+            android:name=".order.OrderDetailActivity"
+            android:exported="false" />
+        <activity
             android:name=".notification.NotificationActivity"
             android:exported="false" />
         <activity
@@ -85,7 +88,7 @@
             android:name=".review.WriteReviewActivity"
             android:exported="false" />
         <activity
-            android:name=".ShippingTrackingActivity"
+            android:name=".shipping.ShippingTrackingActivity"
             android:exported="false" />
         </application>
 

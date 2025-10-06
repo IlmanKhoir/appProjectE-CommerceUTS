@@ -5,21 +5,31 @@ import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.appprojek.R
 import com.example.appprojek.cart.CartManager
+import com.example.appprojek.data.WishlistRepository
 import com.example.appprojek.databinding.ActivityProductDetailBinding
 import com.example.appprojek.model.Product
 import com.example.appprojek.model.Review
 import com.example.appprojek.review.WriteReviewActivity
 import com.example.appprojek.ui.ReviewAdapter
+import com.example.appprojek.util.AuthManager
 import com.example.appprojek.util.ReviewManager
 import com.example.appprojek.wishlist.WishlistManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class ProductDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityProductDetailBinding
     private lateinit var reviewAdapter: ReviewAdapter
-    private val wishlistManager by lazy { WishlistManager(applicationContext) }
+    private val wishlistManager by lazy {
+        val userId = authManager.getCurrentUser()?.id ?: "guest"
+        WishlistManager(applicationContext, userId)
+    }
+    private val wishlistRepository by lazy { WishlistRepository() }
+    private val authManager by lazy { AuthManager(this) }
     private val reviewManager by lazy { ReviewManager(applicationContext) }
     private var product: Product? = null
     private var quantity = 1
@@ -69,7 +79,9 @@ class ProductDetailActivity : AppCompatActivity() {
 
         binding.btnAddToWishlist.setOnClickListener {
             product?.let { product ->
-                if (wishlistManager.isInWishlist(product.id)) {
+                // Update UI/local state first for responsiveness
+                val currentlyIn = wishlistManager.isInWishlist(product.id)
+                if (currentlyIn) {
                     wishlistManager.removeFromWishlist(product.id)
                     binding.btnAddToWishlist.text = "Tambah ke Wishlist"
                     Toast.makeText(this, "Dihapus dari wishlist", Toast.LENGTH_SHORT).show()
@@ -77,6 +89,25 @@ class ProductDetailActivity : AppCompatActivity() {
                     wishlistManager.addToWishlist(product)
                     binding.btnAddToWishlist.text = "Hapus dari Wishlist"
                     Toast.makeText(this, "Ditambahkan ke wishlist", Toast.LENGTH_SHORT).show()
+                }
+
+                // Sync to backend if logged in
+                val user = authManager.getCurrentUser()
+                if (user != null && user.id.isNotEmpty()) {
+                    val userId = user.id.toIntOrNull()
+                    if (userId != null) {
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            try {
+                                if (currentlyIn) {
+                                    wishlistRepository.remove(userId, product.id)
+                                } else {
+                                    wishlistRepository.add(userId, product.id)
+                                }
+                            } catch (_: Exception) {
+                                // Silent fail for now
+                            }
+                        }
+                    }
                 }
             }
         }

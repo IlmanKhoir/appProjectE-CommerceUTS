@@ -7,11 +7,16 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.example.appprojek.databinding.ActivityWishlistBinding
 import com.example.appprojek.product.ProductDetailActivity
 import com.example.appprojek.ui.ProductAdapter
+import com.example.appprojek.util.AuthManager
 
 class WishlistActivity : AppCompatActivity() {
     private lateinit var binding: ActivityWishlistBinding
     private lateinit var productAdapter: ProductAdapter
-    private val wishlistManager = WishlistManager(this)
+    private val authManager by lazy { AuthManager(this) }
+    private val wishlistManager by lazy {
+        val userId = authManager.getCurrentUser()?.id ?: "guest"
+        WishlistManager(applicationContext, userId)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

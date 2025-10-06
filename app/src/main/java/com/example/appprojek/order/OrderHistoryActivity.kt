@@ -4,18 +4,27 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.appprojek.TrackingActivity
+import com.example.appprojek.shipping.ShippingTrackingActivity
+import com.example.appprojek.data.OrderRepository
 import com.example.appprojek.databinding.ActivityOrderHistoryBinding
 import com.example.appprojek.domain.OrderStatus
 import com.example.appprojek.model.CartItem
 import com.example.appprojek.model.Order
 import com.example.appprojek.model.Product
 import com.example.appprojek.ui.OrderAdapter
+import com.example.appprojek.util.AuthManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class OrderHistoryActivity : AppCompatActivity() {
         private lateinit var binding: ActivityOrderHistoryBinding
         private lateinit var orderAdapter: OrderAdapter
+        private val orderRepository by lazy { OrderRepository() }
+        private val authManager by lazy { AuthManager(this) }
+        private var currentOrders: MutableList<Order> = mutableListOf()
+        private val prefs by lazy { getSharedPreferences("order_progress_prefs", MODE_PRIVATE) }
 
         override fun onCreate(savedInstanceState: Bundle?) {
                 super.onCreate(savedInstanceState)
@@ -34,110 +43,126 @@ class OrderHistoryActivity : AppCompatActivity() {
                         OrderAdapter(
                                 emptyList(),
                                 onOrderClick = { order ->
-                                        // Navigate to order detail or tracking
-                                        if (order.status == OrderStatus.SHIPPED ||
-                                                        order.status == OrderStatus.DELIVERED
-                                        ) {
-                                                val intent =
-                                                        Intent(this, TrackingActivity::class.java)
-                                                intent.putExtra("order_id", order.orderId)
-                                                intent.putExtra(
-                                                        "tracking_number",
-                                                        order.trackingNumber
-                                                )
-                                                startActivity(intent)
-                                        } else {
-                                                Toast.makeText(
-                                                                this,
-                                                                "Detail pesanan: ${order.orderId}",
-                                                                Toast.LENGTH_SHORT
-                                                        )
-                                                        .show()
-                                        }
+                                        val intent = Intent(this, OrderDetailActivity::class.java)
+                                        intent.putExtra("order", order)
+                                        startActivity(intent)
                                 }
                         )
                 binding.recyclerOrders.adapter = orderAdapter
         }
 
         private fun loadOrderHistory() {
-                // Simulasi data riwayat pesanan
-                val orders =
-                        listOf(
-                                Order(
-                                        orderId = "ORD001",
-                                        userId = "user1",
-                                        items =
-                                                listOf(
-                                                        CartItem(
-                                                                Product(
-                                                                        "p1",
-                                                                        "Susu Kotak 1L",
-                                                                        23000
-                                                                ),
-                                                                2
-                                                        ),
-                                                        CartItem(
-                                                                Product("p2", "Roti Tawar", 18000),
-                                                                1
-                                                        )
-                                                ),
-                                        totalAmount = 64000,
-                                        status = OrderStatus.DELIVERED,
-                                        orderDate = System.currentTimeMillis() - 86400000 * 7,
-                                        shippingAddress = "Jl. Merdeka No. 123, Jakarta",
-                                        paymentMethod = "Transfer Bank",
-                                        trackingNumber = "TRK123456789"
-                                ),
-                                Order(
-                                        orderId = "ORD002",
-                                        userId = "user1",
-                                        items =
-                                                listOf(
-                                                        CartItem(
-                                                                Product(
-                                                                        "p3",
-                                                                        "Mie Instan Goreng",
-                                                                        3500
-                                                                ),
-                                                                5
-                                                        ),
-                                                        CartItem(
-                                                                Product(
-                                                                        "p4",
-                                                                        "Minyak Goreng 1L",
-                                                                        15500
-                                                                ),
-                                                                1
-                                                        )
-                                                ),
-                                        totalAmount = 33000,
-                                        status = OrderStatus.SHIPPED,
-                                        orderDate = System.currentTimeMillis() - 86400000 * 3,
-                                        shippingAddress = "Jl. Merdeka No. 123, Jakarta",
-                                        paymentMethod = "E-Wallet",
-                                        trackingNumber = "TRK987654321"
-                                ),
-                                Order(
-                                        orderId = "ORD003",
-                                        userId = "user1",
-                                        items =
-                                                listOf(
-                                                        CartItem(
-                                                                Product(
-                                                                        "p5",
-                                                                        "Beras Premium 5kg",
-                                                                        79000
-                                                                ),
-                                                                1
-                                                        )
-                                                ),
-                                        totalAmount = 79000,
-                                        status = OrderStatus.PROCESSING,
-                                        orderDate = System.currentTimeMillis() - 86400000,
-                                        shippingAddress = "Jl. Merdeka No. 123, Jakarta",
-                                        paymentMethod = "Transfer Bank"
+                val user = authManager.getCurrentUser()
+                val userId = user?.id?.toIntOrNull()
+                if (userId == null) {
+                        Toast.makeText(
+                                        this,
+                                        "Silakan login untuk melihat riwayat pesanan",
+                                        Toast.LENGTH_SHORT
                                 )
-                        )
-                orderAdapter.updateOrders(orders)
+                                .show()
+                        orderAdapter.updateOrders(emptyList())
+                        return
+                }
+
+                lifecycleScope.launch(Dispatchers.IO) {
+                        try {
+                                val rows = orderRepository.list(userId)
+                                val mapped =
+                                        rows.map { r ->
+                                                Order(
+                                                        orderId = r.id.toString(),
+                                                        userId = userId.toString(),
+                                                        items =
+                                                                r.items.map { i ->
+                                                                        CartItem(
+                                                                                Product(
+                                                                                        i.product_id,
+                                                                                        i.product_id,
+                                                                                        i.price
+                                                                                ),
+                                                                                i.qty
+                                                                        )
+                                                                },
+                                                        totalAmount = r.total_amount,
+                                                        status =
+                                                                when (r.status.lowercase()) {
+                                                                        "delivered" ->
+                                                                                OrderStatus
+                                                                                        .DELIVERED
+                                                                        "shipped", "in_transit" ->
+                                                                                OrderStatus.SHIPPED
+                                                                        else ->
+                                                                                OrderStatus
+                                                                                        .PROCESSING
+                                                                },
+                                                        orderDate = System.currentTimeMillis(),
+                                                        shippingAddress = r.shipping_address ?: "",
+                                                        paymentMethod = r.payment_method ?: "",
+                                                        trackingNumber = r.tracking_number
+                                                )
+                                        }
+                                runOnUiThread {
+                                        currentOrders = mapped.toMutableList()
+                                        // Restore persisted status per order id
+                                        currentOrders = currentOrders.map { o ->
+                                                val saved = prefs.getString("status_${'$'}{o.orderId}", null)
+                                                if (saved != null) o.copy(status = OrderStatus.valueOf(saved)) else o
+                                        }.toMutableList()
+                                        orderAdapter.updateOrders(currentOrders)
+                                        simulateStatusProgress()
+                                }
+                        } catch (e: Exception) {
+                                runOnUiThread {
+                                        Toast.makeText(
+                                                        this@OrderHistoryActivity,
+                                                        e.message ?: "Gagal memuat pesanan",
+                                                        Toast.LENGTH_SHORT
+                                                )
+                                                .show()
+                                }
+                        }
+                }
+        }
+
+        private fun simulateStatusProgress() {
+                // Ubah status setiap 2 detik: PROCESSING -> SHIPPED -> DELIVERED
+                lifecycleScope.launch {
+                        try {
+                                // Step 1: pastikan minimal PROCESSING
+                                currentOrders = currentOrders.map { o ->
+                                        if (o.status == OrderStatus.PENDING || o.status == OrderStatus.CONFIRMED)
+                                                o.copy(status = OrderStatus.PROCESSING) else o
+                                }.toMutableList()
+                                orderAdapter.updateOrders(currentOrders)
+                                persistStatuses()
+
+                                kotlinx.coroutines.delay(2000)
+
+                                // Step 2: SHIPPED (sedang dalam perjalanan)
+                                currentOrders = currentOrders.map { o ->
+                                        if (o.status == OrderStatus.PROCESSING) o.copy(status = OrderStatus.SHIPPED)
+                                        else o
+                                }.toMutableList()
+                                orderAdapter.updateOrders(currentOrders)
+                                persistStatuses()
+
+                                kotlinx.coroutines.delay(2000)
+
+                                // Step 3: DELIVERED (paket telah sampai tujuan)
+                                currentOrders = currentOrders.map { o ->
+                                        if (o.status == OrderStatus.SHIPPED) o.copy(status = OrderStatus.DELIVERED)
+                                        else o
+                                }.toMutableList()
+                                orderAdapter.updateOrders(currentOrders)
+                                persistStatuses()
+                        } catch (_: Exception) { }
+                }
+        }
+
+        private fun persistStatuses() {
+                val e = prefs.edit()
+                currentOrders.forEach { o -> e.putString("status_${'$'}{o.orderId}", o.status.name) }
+                e.apply()
         }
 }

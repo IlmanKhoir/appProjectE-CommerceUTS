@@ -4,18 +4,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@color/brand_surface"
     tools:context=".wishlist.WishlistActivity">
 
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
+        style="@style/App.Toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/primary"
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_arrow_back"
-        app:title="Wishlist"
-        app:titleTextColor="@color/white" />
+        app:title="Wishlist" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerProducts"
@@ -49,18 +48,15 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Wishlist Kosong"
-            android:textColor="@color/black"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            style="@style/App.Text.Title"
+            android:text="Wishlist Kosong" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            style="@style/App.Text.Caption"
             android:text="Tambahkan produk ke wishlist untuk melihatnya di sini"
-            android:textColor="@color/gray"
-            android:textSize="14sp"
             android:gravity="center" />
 
     </LinearLayout>

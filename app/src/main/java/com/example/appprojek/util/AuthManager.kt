@@ -16,9 +16,7 @@ class AuthManager(private val context: Context) {
 
     private val prefs by lazy {
         val masterKey =
-                MasterKey.Builder(context)
-                        .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-                        .build()
+                MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
         EncryptedSharedPreferences.create(
                 context,
                 "auth_prefs_secure",
@@ -28,63 +26,81 @@ class AuthManager(private val context: Context) {
         )
     }
 
-    suspend fun login(request: LoginRequest): Result<String> = withContext(Dispatchers.IO) {
-        try {
-            if (request.email.isEmpty() || request.password.isEmpty()) {
-                return@withContext Result.failure(IllegalArgumentException("Email dan password harus diisi"))
-            }
-            if (!android.util.Patterns.EMAIL_ADDRESS.matcher(request.email).matches()) {
-                return@withContext Result.failure(IllegalArgumentException("Format email tidak valid"))
-            }
-
-            // Simulasi network delay
-            delay(1500)
-
-            return@withContext if (request.email == "user@example.com" && request.password == "password123") {
-                val user =
-                        User(
-                                id = "1",
-                                email = request.email,
-                                name = "User Test",
-                                phone = "081234567890"
+    suspend fun login(request: LoginRequest): Result<String> =
+            withContext(Dispatchers.IO) {
+                try {
+                    if (request.email.isEmpty() || request.password.isEmpty()) {
+                        return@withContext Result.failure(
+                                IllegalArgumentException("Email dan password harus diisi")
                         )
-                saveUser(user)
-                Result.success("Login berhasil")
-            } else {
-                Result.failure(IllegalArgumentException("Email atau password salah"))
-            }
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
+                    }
+                    if (!android.util.Patterns.EMAIL_ADDRESS.matcher(request.email).matches()) {
+                        return@withContext Result.failure(
+                                IllegalArgumentException("Format email tidak valid")
+                        )
+                    }
 
-    suspend fun register(request: RegisterRequest): Result<String> = withContext(Dispatchers.IO) {
-        try {
-            if (request.name.isEmpty() || request.email.isEmpty() || request.phone.isEmpty() || request.password.isEmpty()) {
-                return@withContext Result.failure(IllegalArgumentException("Semua field harus diisi"))
-            }
-            if (!android.util.Patterns.EMAIL_ADDRESS.matcher(request.email).matches()) {
-                return@withContext Result.failure(IllegalArgumentException("Format email tidak valid"))
-            }
-            if (request.password.length < 6) {
-                return@withContext Result.failure(IllegalArgumentException("Password minimal 6 karakter"))
+                    // Simulasi network delay
+                    delay(1500)
+
+                    return@withContext if (request.email == "user@example.com" &&
+                                    request.password == "password123"
+                    ) {
+                        val user =
+                                User(
+                                        id = "1",
+                                        email = request.email,
+                                        name = "User Test",
+                                        phone = "081234567890"
+                                )
+                        saveUser(user)
+                        Result.success("Login berhasil")
+                    } else {
+                        Result.failure(IllegalArgumentException("Email atau password salah"))
+                    }
+                } catch (e: Exception) {
+                    Result.failure(e)
+                }
             }
 
-            delay(1500)
+    suspend fun register(request: RegisterRequest): Result<String> =
+            withContext(Dispatchers.IO) {
+                try {
+                    if (request.name.isEmpty() ||
+                                    request.email.isEmpty() ||
+                                    request.phone.isEmpty() ||
+                                    request.password.isEmpty()
+                    ) {
+                        return@withContext Result.failure(
+                                IllegalArgumentException("Semua field harus diisi")
+                        )
+                    }
+                    if (!android.util.Patterns.EMAIL_ADDRESS.matcher(request.email).matches()) {
+                        return@withContext Result.failure(
+                                IllegalArgumentException("Format email tidak valid")
+                        )
+                    }
+                    if (request.password.length < 6) {
+                        return@withContext Result.failure(
+                                IllegalArgumentException("Password minimal 6 karakter")
+                        )
+                    }
 
-            val user =
-                    User(
-                            id = System.currentTimeMillis().toString(),
-                            email = request.email,
-                            name = request.name,
-                            phone = request.phone
-                    )
-            saveUser(user)
-            Result.success("Registrasi berhasil")
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
-    }
+                    delay(1500)
+
+                    val user =
+                            User(
+                                    id = System.currentTimeMillis().toString(),
+                                    email = request.email,
+                                    name = request.name,
+                                    phone = request.phone
+                            )
+                    saveUser(user)
+                    Result.success("Registrasi berhasil")
+                } catch (e: Exception) {
+                    Result.failure(e)
+                }
+            }
 
     fun logout() {
         prefs.edit().clear().apply()
@@ -112,5 +128,24 @@ class AuthManager(private val context: Context) {
     private fun saveUser(user: User) {
         val userJson = gson.toJson(user)
         prefs.edit().putString("user_data", userJson).putBoolean("guest_mode", false).apply()
+    }
+
+    // Save minimal user from backend login/register, with optional phone/address
+    fun saveBackendUser(
+            userId: Int,
+            email: String,
+            phone: String? = null,
+            address: String? = null
+    ) {
+        val existing = getCurrentUser()
+        val user =
+                User(
+                        id = userId.toString(),
+                        email = email,
+                        name = existing?.name ?: "",
+                        phone = phone ?: existing?.phone ?: "",
+                        address = address ?: existing?.address ?: ""
+                )
+        saveUser(user)
     }
 }

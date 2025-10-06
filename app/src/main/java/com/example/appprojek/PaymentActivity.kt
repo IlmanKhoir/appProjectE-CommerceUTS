@@ -1,4 +1,4 @@
-package com.example.appprojek
+package com.example.appprojek.payment
 
 import android.os.Bundle
 import android.view.View
@@ -6,10 +6,14 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.RadioButton
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.example.appprojek.R
 import com.example.appprojek.domain.CartServiceAdapter
 import com.example.appprojek.domain.PaymentMethod
 import com.example.appprojek.presentation.PaymentPresenter
+import com.example.appprojek.order.OrderSummaryActivity
+import com.example.appprojek.util.AuthManager
 import com.example.appprojek.util.CurrencyFormatter
 
 class PaymentActivity : AppCompatActivity() {
@@ -46,22 +50,83 @@ class PaymentActivity : AppCompatActivity() {
             bindSummary()
         }
 
+        var selectedMethodName: String? = null
+
+        fun showBankOptions() {
+            val items = arrayOf("Transfer BCA", "Transfer BRI", "Transfer BNI", "Transfer Mandiri")
+            AlertDialog.Builder(this)
+                    .setTitle(getString(R.string.payment_bank))
+                    .setItems(items) { _, which -> selectedMethodName = items[which] }
+                    .show()
+        }
+
+        fun showEwalletOptions() {
+            val items = arrayOf("GoPay", "OVO", "DANA", "ShopeePay")
+            AlertDialog.Builder(this)
+                    .setTitle(getString(R.string.payment_ewallet))
+                    .setItems(items) { _, which -> selectedMethodName = items[which] }
+                    .show()
+        }
+
         val payButton = findViewById<Button>(R.id.buttonConfirmPay)
         payButton.setOnClickListener {
-            val method =
-                    when (presenter.selectedMethod) {
-                        PaymentMethod.BANK -> getString(R.string.payment_bank)
-                        PaymentMethod.EWALLET -> getString(R.string.payment_ewallet)
-                        PaymentMethod.COD -> getString(R.string.payment_cod)
-                        null -> null
-                    }
-            if (method != null) {
-                val total = textTotalPay.text.toString()
-                val intent = android.content.Intent(this, OrderSummaryActivity::class.java)
-                intent.putExtra("totalPay", total)
-                intent.putExtra("method", method)
-                startActivity(intent)
+            // Block jika keranjang kosong
+            val cartIsEmpty = CartServiceAdapter().getItems().isEmpty()
+            if (cartIsEmpty) {
+                android.widget.Toast.makeText(this, "Keranjang masih kosong", android.widget.Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            // Determine selected method name
+            when (presenter.selectedMethod) {
+                PaymentMethod.BANK -> if (selectedMethodName == null) showBankOptions()
+                PaymentMethod.EWALLET -> if (selectedMethodName == null) showEwalletOptions()
+                PaymentMethod.COD -> selectedMethodName = "COD"
+                null -> {}
+            }
+
+            val method = selectedMethodName
+            if (method.isNullOrBlank()) return@setOnClickListener
+
+            // Use numeric total for backend
+            val totalInt = presenter.computeSummary().total
+            // Prefer intent extra; if empty, use saved user address
+            var addressFromPrev = intent.getStringExtra("shippingAddress") ?: ""
+            if (addressFromPrev.isBlank()) {
+                val saved = AuthManager(this).getCurrentUser()
+                addressFromPrev = saved?.address.orEmpty()
+            }
+
+            fun goNext() {
+                val i = android.content.Intent(this, OrderSummaryActivity::class.java)
+                i.putExtra("totalAmountInt", totalInt)
+                i.putExtra("shippingAddress", addressFromPrev)
+                i.putExtra("method", method)
+                startActivity(i)
                 finish()
+            }
+
+            if (addressFromPrev.isBlank()) {
+                // Ask user to input shipping address first
+                val input = android.widget.EditText(this)
+                input.hint = "Alamat pengiriman"
+                input.minLines = 2
+                input.maxLines = 4
+                AlertDialog.Builder(this)
+                        .setTitle("Alamat Pengiriman")
+                        .setMessage("Masukkan alamat pengiriman Anda")
+                        .setView(input)
+                        .setPositiveButton("Simpan") { d, _ ->
+                            val v = input.text?.toString()?.trim().orEmpty()
+                            if (v.isNotEmpty()) {
+                                addressFromPrev = v
+                                goNext()
+                            }
+                            d.dismiss()
+                        }
+                        .setNegativeButton("Batal", null)
+                        .show()
+            } else {
+                goNext()
             }
         }
 
@@ -70,6 +135,14 @@ class PaymentActivity : AppCompatActivity() {
             rbBank.isChecked = m == PaymentMethod.BANK
             rbEwallet.isChecked = m == PaymentMethod.EWALLET
             rbCod.isChecked = m == PaymentMethod.COD
+            // reset previously chosen provider when switching
+            selectedMethodName =
+                    when (m) {
+                        PaymentMethod.COD -> "COD"
+                        else -> null
+                    }
+            if (m == PaymentMethod.BANK) showBankOptions()
+            if (m == PaymentMethod.EWALLET) showEwalletOptions()
         }
         findViewById<View>(R.id.cardBank).setOnClickListener { select(PaymentMethod.BANK) }
         findViewById<View>(R.id.cardEwallet).setOnClickListener { select(PaymentMethod.EWALLET) }

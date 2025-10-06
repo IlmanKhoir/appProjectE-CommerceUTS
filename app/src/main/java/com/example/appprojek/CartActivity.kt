@@ -1,4 +1,4 @@
-package com.example.appprojek
+package com.example.appprojek.cart
 
 import android.content.Intent
 import android.os.Bundle
@@ -9,6 +9,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.appprojek.R
 import com.example.appprojek.cart.CartManager
 import com.example.appprojek.ui.CartAdapter
 import com.example.appprojek.voucher.VoucherActivity

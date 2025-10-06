@@ -5,7 +5,8 @@
     android:id="@+id/rootCart"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="12dp">
+    android:padding="12dp"
+    android:background="@color/brand_surface">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerCart"
@@ -21,8 +22,7 @@
         android:id="@+id/textTotal"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:textSize="18sp"
+        style="@style/App.Text.Title"
         app:layout_constraintBottom_toTopOf="@id/btnVoucher"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -30,8 +30,9 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnVoucher"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        style="@style/App.Button.Secondary"
         android:layout_marginTop="8dp"
         android:text="Pakai Voucher"
         app:layout_constraintTop_toBottomOf="@id/textTotal"

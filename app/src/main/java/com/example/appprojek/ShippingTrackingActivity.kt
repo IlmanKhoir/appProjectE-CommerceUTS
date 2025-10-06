@@ -1,4 +1,4 @@
-package com.example.appprojek
+package com.example.appprojek.shipping
 
 import android.Manifest
 import android.content.Intent
@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.example.appprojek.MainActivity
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.snackbar.Snackbar
 import java.util.concurrent.TimeUnit
@@ -60,7 +61,7 @@ class ShippingTrackingActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_shipping)
+        setContentView(com.example.appprojek.R.layout.activity_shipping)
 
         // Setup toolbar with back button navigation to home
         setupToolbar()
@@ -82,15 +83,15 @@ class ShippingTrackingActivity : AppCompatActivity() {
     }
 
     private fun initializeViews() {
-        mapView = findViewById(R.id.mapView)
-        progressBar = findViewById(R.id.progressBar)
-        connectionStatus = findViewById(R.id.connectionStatus)
-        routeInfoOverlay = findViewById(R.id.routeInfoOverlay)
-        driverInfoCard = findViewById(R.id.driverInfoCard)
+        mapView = findViewById(com.example.appprojek.R.id.mapView)
+        progressBar = findViewById(com.example.appprojek.R.id.progressBar)
+        connectionStatus = findViewById(com.example.appprojek.R.id.connectionStatus)
+        routeInfoOverlay = findViewById(com.example.appprojek.R.id.routeInfoOverlay)
+        driverInfoCard = findViewById(com.example.appprojek.R.id.driverInfoCard)
     }
 
     private fun setupToolbar() {
-        val toolbar = findViewById<MaterialToolbar>(R.id.topAppBar)
+        val toolbar = findViewById<MaterialToolbar>(com.example.appprojek.R.id.topAppBar)
         toolbar.setNavigationOnClickListener {
             // Navigate back to MainActivity with HomeFragment
             val intent = Intent(this, MainActivity::class.java)
@@ -107,7 +108,7 @@ class ShippingTrackingActivity : AppCompatActivity() {
         mapController = mapView.controller
 
         // Set initial location (Jakarta)
-        val defaultLocation = GeoPoint(-6.2088, 106.8456)
+        val defaultLocation = org.osmdroid.util.GeoPoint(-6.2088, 106.8456)
         mapController.setZoom(15.0)
         mapController.setCenter(defaultLocation)
 
@@ -152,13 +153,13 @@ class ShippingTrackingActivity : AppCompatActivity() {
                             override fun onOpen(webSocket: WebSocket, response: Response) {
                                 runOnUiThread {
                                     connectionStatus.findViewById<android.widget.TextView>(
-                                                    R.id.connectionStatus
+                                                    com.example.appprojek.R.id.connectionStatus
                                             )
                                             .text = "Terhubung"
                                     connectionStatus.setBackgroundColor(
                                             ContextCompat.getColor(
                                                     this@ShippingTrackingActivity,
-                                                    R.color.success_color
+                                                    com.example.appprojek.R.color.success_color
                                             )
                                     )
                                     Log.d(TAG, "WebSocket connected")
@@ -176,13 +177,13 @@ class ShippingTrackingActivity : AppCompatActivity() {
                             ) {
                                 runOnUiThread {
                                     connectionStatus.findViewById<android.widget.TextView>(
-                                                    R.id.connectionStatus
+                                                    com.example.appprojek.R.id.connectionStatus
                                             )
                                             .text = "Terputus"
                                     connectionStatus.setBackgroundColor(
                                             ContextCompat.getColor(
                                                     this@ShippingTrackingActivity,
-                                                    R.color.error_color
+                                                    com.example.appprojek.R.color.error_color
                                             )
                                     )
                                     Log.e(TAG, "WebSocket failed", t)
@@ -247,7 +248,7 @@ class ShippingTrackingActivity : AppCompatActivity() {
         // Update or create driver marker
         if (driverMarker == null) {
             driverMarker = Marker(mapView)
-            driverMarker?.icon = ContextCompat.getDrawable(this, R.drawable.ic_truck_moving)
+            driverMarker?.icon = ContextCompat.getDrawable(this, com.example.appprojek.R.drawable.ic_truck_moving)
             driverMarker?.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
             mapView.overlays.add(driverMarker)
         }
@@ -301,28 +302,34 @@ class ShippingTrackingActivity : AppCompatActivity() {
     }
 
     private fun updateDriverInfo(driverName: String, eta: String, vehicleInfo: String) {
-        findViewById<android.widget.TextView>(R.id.driverName).text = driverName
-        findViewById<android.widget.TextView>(R.id.etaText).text = eta
-        findViewById<android.widget.TextView>(R.id.vehicleInfo).text = vehicleInfo
+        findViewById<android.widget.TextView>(com.example.appprojek.R.id.driverName).text = driverName
+        findViewById<android.widget.TextView>(com.example.appprojek.R.id.etaText).text = eta
+        findViewById<android.widget.TextView>(com.example.appprojek.R.id.vehicleInfo).text = vehicleInfo
+
+        // Sinkronkan status pengiriman sederhana via SharedPreferences (demo)
+        val prefs = getSharedPreferences("order_progress_prefs", MODE_PRIVATE)
+        val lowered = eta.lowercase()
+        val status = if (lowered.contains("tiba")) "DELIVERED" else "SHIPPED"
+        prefs.edit().putString("status_global", status).apply()
     }
 
     private fun updateStatus(status: String, statusMessage: String) {
-        findViewById<android.widget.TextView>(R.id.statusText).text = statusMessage
+        findViewById<android.widget.TextView>(com.example.appprojek.R.id.statusText).text = statusMessage
 
         // Update status icon based on status
-        val statusIcon = findViewById<android.widget.ImageView>(R.id.statusIcon)
+        val statusIcon = findViewById<android.widget.ImageView>(com.example.appprojek.R.id.statusIcon)
         when (status) {
             "picked_up" -> {
-                statusIcon.setImageResource(R.drawable.ic_truck_moving)
-                statusIcon.setColorFilter(ContextCompat.getColor(this, R.color.success_color))
+                statusIcon.setImageResource(com.example.appprojek.R.drawable.ic_truck_moving)
+                statusIcon.setColorFilter(ContextCompat.getColor(this, com.example.appprojek.R.color.success_color))
             }
             "in_transit" -> {
-                statusIcon.setImageResource(R.drawable.ic_truck_moving)
-                statusIcon.setColorFilter(ContextCompat.getColor(this, R.color.primary_color))
+                statusIcon.setImageResource(com.example.appprojek.R.drawable.ic_truck_moving)
+                statusIcon.setColorFilter(ContextCompat.getColor(this, com.example.appprojek.R.color.primary_color))
             }
             "delivered" -> {
-                statusIcon.setImageResource(R.drawable.ic_truck_moving)
-                statusIcon.setColorFilter(ContextCompat.getColor(this, R.color.success_color))
+                statusIcon.setImageResource(com.example.appprojek.R.drawable.ic_truck_moving)
+                statusIcon.setColorFilter(ContextCompat.getColor(this, com.example.appprojek.R.color.success_color))
             }
         }
     }
@@ -333,25 +340,25 @@ class ShippingTrackingActivity : AppCompatActivity() {
                 val distance = driver.distanceToAsDouble(dest)
                 val distanceKm = String.format("%.1f", distance / 1000)
 
-                findViewById<android.widget.TextView>(R.id.routeDistance).text =
+                findViewById<android.widget.TextView>(com.example.appprojek.R.id.routeDistance).text =
                         "Jarak: $distanceKm km"
 
                 // Estimate time (assuming average speed of 30 km/h)
                 val estimatedTime = (distance / 1000 / 30 * 60).toInt()
-                findViewById<android.widget.TextView>(R.id.routeTime).text =
+                findViewById<android.widget.TextView>(com.example.appprojek.R.id.routeTime).text =
                         "Estimasi: $estimatedTime menit"
             }
         }
     }
 
     private fun setupClickListeners() {
-        findViewById<com.google.android.material.button.MaterialButton>(R.id.btnCallDriver)
+        findViewById<com.google.android.material.button.MaterialButton>(com.example.appprojek.R.id.btnCallDriver)
                 .setOnClickListener {
                     // Implement call functionality
                     Toast.makeText(this, "Memanggil driver...", Toast.LENGTH_SHORT).show()
                 }
 
-        findViewById<com.google.android.material.button.MaterialButton>(R.id.btnChatDriver)
+        findViewById<com.google.android.material.button.MaterialButton>(com.example.appprojek.R.id.btnChatDriver)
                 .setOnClickListener {
                     // Implement chat functionality
                     Toast.makeText(this, "Membuka chat...", Toast.LENGTH_SHORT).show()
@@ -360,9 +367,9 @@ class ShippingTrackingActivity : AppCompatActivity() {
 
     private fun setupMockData() {
         // Set connection status to connected
-        connectionStatus.findViewById<android.widget.TextView>(R.id.connectionStatus).text =
+        connectionStatus.findViewById<android.widget.TextView>(com.example.appprojek.R.id.connectionStatus).text =
                 "Mock Data"
-        connectionStatus.setBackgroundColor(ContextCompat.getColor(this, R.color.success_color))
+        connectionStatus.setBackgroundColor(ContextCompat.getColor(this, com.example.appprojek.R.color.success_color))
 
         // Initialize mock route
         val mockRoute =

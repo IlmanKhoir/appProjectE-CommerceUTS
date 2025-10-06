@@ -28,8 +28,7 @@ class ProfileActivity : AppCompatActivity() {
         binding.toolbar.setNavigationOnClickListener { finish() }
 
         binding.btnEditProfile.setOnClickListener {
-            // TODO: Implement edit profile
-            Toast.makeText(this, "Fitur edit profil akan segera hadir", Toast.LENGTH_SHORT).show()
+            startActivity(Intent(this, EditProfileActivity::class.java))
         }
 
         binding.layoutOrderHistory.setOnClickListener {

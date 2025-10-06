@@ -56,21 +56,21 @@ class HomeFragment : Fragment() {
                                         "p1",
                                         "Susu Kotak 1L",
                                         23000,
-                                        imageResId = R.drawable.susu_kotak, // Tambahkan gambar susu
+                                        imageResId = R.drawable.susu_kotak,
                                         description = "Susu segar dalam kemasan kotak"
                                 ),
                                 Product(
                                         "p2",
                                         "Roti Tawar",
                                         18000,
-                                        imageResId = R.drawable.roti_tawar, // Tambahkan gambar roti
+                                        imageResId = R.drawable.roti_tawar, 
                                         description = "Roti tawar lembut dan segar"
                                 ),
                                 Product(
                                         "p3",
                                         "Mie Instan Goreng",
                                         3500,
-                                        imageResId = R.drawable.mie_instant, // Tambahkan gambar mie
+                                        imageResId = R.drawable.mie_instant, 
                                         description = "Mie instan rasa goreng"
                                 ),
                                 Product(
@@ -78,7 +78,7 @@ class HomeFragment : Fragment() {
                                         "Minyak Goreng 1L",
                                         15500,
                                         imageResId =
-                                                R.drawable.minyak_goreng, // Tambahkan gambar minyak
+                                                R.drawable.minyak_goreng, 
                                         description = "Minyak goreng berkualitas tinggi"
                                 ),
                                 Product(
@@ -86,7 +86,7 @@ class HomeFragment : Fragment() {
                                         "Beras Premium 5kg",
                                         79000,
                                         imageResId =
-                                                R.drawable.beras_premium, // Tambahkan gambar beras
+                                                R.drawable.beras_premium, 
                                         description = "Beras premium kualitas terbaik"
                                 ),
                                 Product(
@@ -94,21 +94,21 @@ class HomeFragment : Fragment() {
                                         "Snack Kentang",
                                         12000,
                                         imageResId =
-                                                R.drawable.snack_kentang, // Tambahkan gambar snack
+                                                R.drawable.snack_kentang,
                                         description = "Snack kentang renyah"
                                 ),
                                 Product(
                                         "p7",
                                         "Teh Botol",
                                         5000,
-                                        imageResId = R.drawable.teh_botol, // Tambahkan gambar teh
+                                        imageResId = R.drawable.teh_botol, 
                                         description = "Teh botol segar"
                                 ),
                                 Product(
                                         "p8",
                                         "Kopi Susu",
                                         8000,
-                                        imageResId = R.drawable.kopi_susu, // Tambahkan gambar kopi
+                                        imageResId = R.drawable.kopi_susu, 
                                         description = "Kopi susu nikmat"
                                 )
                         )

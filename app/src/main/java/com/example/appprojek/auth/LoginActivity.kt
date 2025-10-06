@@ -6,10 +6,12 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.appprojek.MainActivity
+import com.example.appprojek.data.UserRepository
 import com.example.appprojek.databinding.ActivityLoginBinding
-import com.example.appprojek.model.LoginRequest
 import com.example.appprojek.util.AuthManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
@@ -56,16 +58,35 @@ class LoginActivity : AppCompatActivity() {
         binding.progressBar.visibility = android.view.View.VISIBLE
 
         lifecycleScope.launch {
-           val result = authManager.login(LoginRequest(email, password))
-            binding.btnLogin.isEnabled = true
-            binding.progressBar.visibility = android.view.View.GONE
+            try {
+                val repo = UserRepository()
+                val result = withContext(Dispatchers.IO) { repo.login(email, password) }
+                binding.btnLogin.isEnabled = true
+                binding.progressBar.visibility = android.view.View.GONE
 
-            result.onSuccess {
-                Toast.makeText(this@LoginActivity, it, Toast.LENGTH_SHORT).show()
-                startActivity(Intent(this@LoginActivity, MainActivity::class.java))
-                finish()
-            }.onFailure {
-                Toast.makeText(this@LoginActivity, it.message ?: "Gagal login", Toast.LENGTH_SHORT).show()
+                if (result.success && result.user_id != null && result.email != null) {
+                    authManager.saveBackendUser(
+                            result.user_id,
+                            result.email,
+                            result.phone,
+                            result.address
+                    )
+                    Toast.makeText(this@LoginActivity, "Login berhasil", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(this@LoginActivity, MainActivity::class.java))
+                    finish()
+                } else {
+                    Toast.makeText(
+                                    this@LoginActivity,
+                                    result.error ?: "Gagal login",
+                                    Toast.LENGTH_SHORT
+                            )
+                            .show()
+                }
+            } catch (e: Exception) {
+                binding.btnLogin.isEnabled = true
+                binding.progressBar.visibility = android.view.View.GONE
+                Toast.makeText(this@LoginActivity, e.message ?: "Gagal login", Toast.LENGTH_SHORT)
+                        .show()
             }
         }
     }

@@ -1,4 +1,4 @@
-package com.example.appprojek
+package com.example.appprojek.order
 
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -8,6 +8,13 @@ import android.os.CountDownTimer
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import com.example.appprojek.R
+import com.example.appprojek.data.OrderRepository
+import com.example.appprojek.util.AuthManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class OrderSummaryActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,8 +52,116 @@ class OrderSummaryActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.buttonConfirm).setOnClickListener {
-            startActivity(android.content.Intent(this, ShippingActivity::class.java))
-            finish()
+            val auth = AuthManager(this)
+            val currentUser = auth.getCurrentUser()
+            if (currentUser == null) {
+                android.widget.Toast.makeText(
+                                this,
+                                "Silakan login terlebih dahulu",
+                                android.widget.Toast.LENGTH_SHORT
+                        )
+                        .show()
+                return@setOnClickListener
+            }
+
+            val userId = currentUser.id.toIntOrNull()
+            if (userId == null) {
+                android.widget.Toast.makeText(
+                                this,
+                                "User ID tidak valid",
+                                android.widget.Toast.LENGTH_SHORT
+                        )
+                        .show()
+                return@setOnClickListener
+            }
+
+            val totalNumeric = intent.getIntExtra("totalAmountInt", 0)
+            val address = intent.getStringExtra("shippingAddress") ?: ""
+            val methodVal = method
+
+            if (totalNumeric <= 0) {
+                android.widget.Toast.makeText(
+                                this,
+                                "Total tidak valid",
+                                android.widget.Toast.LENGTH_SHORT
+                        )
+                        .show()
+                return@setOnClickListener
+            }
+            if (address.isBlank()) {
+                android.widget.Toast.makeText(
+                                this,
+                                "Alamat pengiriman wajib diisi",
+                                android.widget.Toast.LENGTH_SHORT
+                        )
+                        .show()
+                return@setOnClickListener
+            }
+            if (methodVal.isBlank()) {
+                android.widget.Toast.makeText(
+                                this,
+                                "Metode pembayaran wajib diisi",
+                                android.widget.Toast.LENGTH_SHORT
+                        )
+                        .show()
+                return@setOnClickListener
+            }
+
+            val repo = OrderRepository()
+            lifecycleScope.launch {
+                try {
+                    withContext(Dispatchers.IO) {
+                        repo.create(
+                                userId = userId,
+                                totalAmount = totalNumeric,
+                                status = "paid",
+                                shippingAddress = address,
+                                paymentMethod = methodVal,
+                                trackingNumber = null,
+                                items = com.example.appprojek.domain.CartServiceAdapter().getItems().map { it ->
+                                    com.example.appprojek.data.OrderRepository.OrderItem(
+                                            product_id = it.product.id,
+                                            qty = it.quantity,
+                                            price = it.product.priceRupiah
+                                    )
+                                }
+                        )
+                    }
+                    android.widget.Toast.makeText(
+                                    this@OrderSummaryActivity,
+                                    "Pesanan dibuat",
+                                    android.widget.Toast.LENGTH_SHORT
+                            )
+                            .show()
+                    // Bersihkan keranjang setelah order berhasil
+                    com.example.appprojek.domain.CartServiceAdapter().clear()
+
+                    startActivity(
+                            android.content.Intent(
+                                    this@OrderSummaryActivity,
+                                    com.example.appprojek.order.OrderHistoryActivity::class.java
+                            )
+                    )
+                    finish()
+                } catch (e: Exception) {
+                    android.widget.Toast.makeText(
+                                    this@OrderSummaryActivity,
+                                    e.message ?: "Gagal membuat pesanan",
+                                    android.widget.Toast.LENGTH_LONG
+                            )
+                            .show()
+                }
+            }
+        }
+
+        // Tambah tombol Lacak Pengiriman untuk langsung melihat map animasi driver
+        findViewById<Button>(R.id.buttonTrack).setOnClickListener {
+            startActivity(
+                    android.content.Intent(
+                            this@OrderSummaryActivity,
+                            com.example.appprojek.shipping.ShippingTrackingActivity::class.java
+                    )
+            )
         }
 
         val textCountdown = findViewById<TextView>(R.id.textCountdown)
