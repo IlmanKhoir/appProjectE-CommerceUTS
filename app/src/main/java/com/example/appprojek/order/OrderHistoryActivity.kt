@@ -66,62 +66,53 @@ class OrderHistoryActivity : AppCompatActivity() {
                 }
 
                 lifecycleScope.launch(Dispatchers.IO) {
-                        try {
-                                val rows = orderRepository.list(userId)
-                                val mapped =
-                                        rows.map { r ->
-                                                Order(
-                                                        orderId = r.id.toString(),
-                                                        userId = userId.toString(),
-                                                        items =
-                                                                r.items.map { i ->
-                                                                        CartItem(
-                                                                                Product(
-                                                                                        i.product_id,
-                                                                                        i.product_id,
-                                                                                        i.price
-                                                                                ),
-                                                                                i.qty
-                                                                        )
-                                                                },
-                                                        totalAmount = r.total_amount,
-                                                        status =
-                                                                when (r.status.lowercase()) {
-                                                                        "delivered" ->
-                                                                                OrderStatus
-                                                                                        .DELIVERED
-                                                                        "shipped", "in_transit" ->
-                                                                                OrderStatus.SHIPPED
-                                                                        else ->
-                                                                                OrderStatus
-                                                                                        .PROCESSING
-                                                                },
-                                                        orderDate = System.currentTimeMillis(),
-                                                        shippingAddress = r.shipping_address ?: "",
-                                                        paymentMethod = r.payment_method ?: "",
-                                                        trackingNumber = r.tracking_number
-                                                )
-                                        }
-                                runOnUiThread {
-                                        currentOrders = mapped.toMutableList()
-                                        // Restore persisted status per order id
-                                        currentOrders = currentOrders.map { o ->
-                                                val saved = prefs.getString("status_${'$'}{o.orderId}", null)
-                                                if (saved != null) o.copy(status = OrderStatus.valueOf(saved)) else o
-                                        }.toMutableList()
-                                        orderAdapter.updateOrders(currentOrders)
-                                        simulateStatusProgress()
-                                }
-                        } catch (e: Exception) {
-                                runOnUiThread {
-                                        Toast.makeText(
-                                                        this@OrderHistoryActivity,
-                                                        e.message ?: "Gagal memuat pesanan",
-                                                        Toast.LENGTH_SHORT
-                                                )
-                                                .show()
-                                }
+                    try {
+                        val rows = orderRepository.list(userId)
+                        val mapped = rows.map { r ->
+                            Order(
+                                orderId = r.id.toString(),
+                                userId = userId.toString(),
+                                items = r.items.map { i ->
+                                    CartItem(
+                                        Product(
+                                            i.product_id,
+                                            i.product_name,
+                                            i.price
+                                        ),
+                                        i.qty
+                                    )
+                                },
+                                totalAmount = r.total_amount,
+                                status = when (r.status.lowercase()) {
+                                    "delivered" -> OrderStatus.DELIVERED
+                                    "shipped", "in_transit" -> OrderStatus.SHIPPED
+                                    else -> OrderStatus.PROCESSING
+                                },
+                                orderDate = System.currentTimeMillis(),
+                                shippingAddress = r.shipping_address ?: "",
+                                paymentMethod = r.payment_method ?: "",
+                                trackingNumber = r.tracking_number
+                            )
                         }
+                        runOnUiThread {
+                            currentOrders = mapped.toMutableList()
+                            // Restore persisted status per order id
+                            currentOrders = currentOrders.map { o ->
+                                val saved = prefs.getString("status_${'$'}{o.orderId}", null)
+                                if (saved != null) o.copy(status = OrderStatus.valueOf(saved)) else o
+                            }.toMutableList()
+                            orderAdapter.updateOrders(currentOrders)
+                            simulateStatusProgress()
+                        }
+                    } catch (e: Exception) {
+                        runOnUiThread {
+                            Toast.makeText(
+                                this@OrderHistoryActivity,
+                                e.message ?: "Gagal memuat pesanan",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
                 }
         }
 

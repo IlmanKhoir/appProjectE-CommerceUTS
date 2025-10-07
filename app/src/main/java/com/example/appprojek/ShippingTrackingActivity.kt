@@ -349,7 +349,7 @@ class ShippingTrackingActivity : AppCompatActivity() {
         if (driverMarker == null) {
             driverMarker = Marker(mapView)
             // PERBAIKAN: Gunakan resource yang tersedia
-            driverMarker?.icon = ContextCompat.getDrawable(this, android.R.drawable.ic_menu_directions)
+            driverMarker?.icon = ContextCompat.getDrawable(this, com.example.appprojek.R.drawable.ic_car_animasi)
             driverMarker?.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
             mapView.overlays.add(driverMarker)
         }

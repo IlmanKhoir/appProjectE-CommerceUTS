@@ -99,6 +99,7 @@ class PaymentActivity : AppCompatActivity() {
             fun goNext() {
                 val i = android.content.Intent(this, OrderSummaryActivity::class.java)
                 i.putExtra("totalAmountInt", totalInt)
+                i.putExtra("totalPay", CurrencyFormatter.formatRupiah(totalInt))
                 i.putExtra("shippingAddress", addressFromPrev)
                 i.putExtra("method", method)
                 startActivity(i)

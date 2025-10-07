@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0) // padding bottom = 0
             insets
         }
         // init first fragment
@@ -36,40 +36,8 @@ class MainActivity : AppCompatActivity() {
         }
         val toolbar = findViewById<MaterialToolbar>(R.id.topAppBar)
         toolbar.setOnMenuItemClickListener { item ->
-            try {
-                when (item.itemId) {
-                    R.id.action_search -> {
-                        startActivity(Intent(this, SearchActivity::class.java))
-                        true
-                    }
-                    R.id.action_notifications -> {
-                        if (authManager.isLoggedIn() || authManager.isGuestMode()) {
-                            startActivity(Intent(this, NotificationActivity::class.java))
-                        } else {
-                            Toast.makeText(
-                                            this,
-                                            "Silakan login terlebih dahulu",
-                                            Toast.LENGTH_SHORT
-                                    )
-                                    .show()
-                            startActivity(Intent(this, LoginActivity::class.java))
-                        }
-                        true
-                    }
-                    R.id.action_profile -> {
-                        if (authManager.isLoggedIn() || authManager.isGuestMode()) {
-                            startActivity(Intent(this, ProfileActivity::class.java))
-                        } else {
-                            startActivity(Intent(this, LoginActivity::class.java))
-                        }
-                        true
-                    }
-                    else -> false
-                }
-            } catch (e: Exception) {
-                Toast.makeText(this, "Terjadi kesalahan: ${e.message}", Toast.LENGTH_SHORT).show()
-                false
-            }
+            // Tidak ada menu search lagi
+            false
         }
         val bottom = findViewById<BottomNavigationView>(R.id.bottomNav)
         bottom.setOnItemSelectedListener { item ->
@@ -86,6 +54,20 @@ class MainActivity : AppCompatActivity() {
                         supportFragmentManager
                                 .beginTransaction()
                                 .replace(R.id.fragmentContainer, CartFragment())
+                                .commit()
+                        true
+                    }
+                    R.id.nav_notifications -> {
+                        supportFragmentManager
+                                .beginTransaction()
+                                .replace(R.id.fragmentContainer, com.example.appprojek.notification.NotificationFragment())
+                                .commit()
+                        true
+                    }
+                    R.id.nav_profile -> {
+                        supportFragmentManager
+                                .beginTransaction()
+                                .replace(R.id.fragmentContainer, com.example.appprojek.profile.ProfileFragment())
                                 .commit()
                         true
                     }

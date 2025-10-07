@@ -11,11 +11,47 @@
         android:orientation="vertical"
         android:padding="12dp">
 
-        <com.google.android.material.search.SearchBar
-            android:id="@+id/searchBar"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Cari produk" />
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp"
+            android:padding="4dp">
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1"
+                android:hint="Cari produk"
+                app:boxBackgroundMode="outline"
+                app:boxCornerRadiusTopStart="24dp"
+                app:boxCornerRadiusTopEnd="24dp"
+                app:boxCornerRadiusBottomStart="24dp"
+                app:boxCornerRadiusBottomEnd="24dp"
+                app:startIconDrawable="@drawable/ic_search"
+                android:elevation="4dp">
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etSearchHome"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@android:color/transparent"
+                    android:inputType="text"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp"
+                    android:textSize="16sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSearchHome"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="8dp"
+                android:backgroundTint="@color/primary"
+                app:cornerRadius="24dp"
+                android:elevation="4dp"
+                app:icon="@drawable/ic_search"
+                app:iconTint="@android:color/white"
+                android:text=""
+                android:contentDescription="Cari" />
+        </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerBanner"

@@ -11,7 +11,7 @@
         android:id="@+id/topAppBar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:title="@string/dua_anak_mart"
+        android:title="Dua Anak Mart"
         app:menu="@menu/menu_top_appbar"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"

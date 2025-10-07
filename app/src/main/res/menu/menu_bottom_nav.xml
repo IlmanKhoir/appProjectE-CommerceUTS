@@ -8,6 +8,14 @@
         android:id="@+id/nav_cart"
         android:title="Keranjang"
         android:icon="@drawable/ic_cart" />
+    <item
+        android:id="@+id/nav_notifications"
+        android:title="Notifikasi"
+        android:icon="@android:drawable/ic_dialog_info" />
+    <item
+        android:id="@+id/nav_profile"
+        android:title="Profil"
+        android:icon="@android:drawable/ic_menu_myplaces" />
 </menu>
 
 

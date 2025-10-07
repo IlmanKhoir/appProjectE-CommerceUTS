@@ -32,7 +32,7 @@ object BackendUsageExamples {
                                 shippingAddress = "Jl. Contoh No. 1",
                                 paymentMethod = "COD",
                                 trackingNumber = null,
-                                items = listOf(OrderRepository.OrderItem("p1", 2, 25000))
+                                items = listOf(OrderRepository.OrderItem("p1", "Produk Contoh", 2, 25000))
                         )
                 Log.d("BackendDemo", "order created: $orderId")
                 val orders = orderRepo.list(userId)

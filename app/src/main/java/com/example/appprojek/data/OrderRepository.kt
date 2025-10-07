@@ -5,8 +5,7 @@ import com.google.gson.Gson
 import java.io.IOException
 
 class OrderRepository(private val gson: Gson = Gson()) {
-
-    data class OrderItem(val product_id: String, val qty: Int, val price: Int)
+    data class OrderItem(val product_id: String, val product_name: String, val qty: Int, val price: Int)
     data class OrderRow(
             val id: Int,
             val total_amount: Int,
@@ -28,26 +27,26 @@ class OrderRepository(private val gson: Gson = Gson()) {
             return orders.map { row ->
                 val itemsRaw = row["items"]
                 val items: List<Map<String, Any?>> =
-                        when (itemsRaw) {
-                            is List<*> -> itemsRaw.filterIsInstance<Map<String, Any?>>()
-                            else -> emptyList()
-                        }
+                    when (itemsRaw) {
+                        is List<*> -> itemsRaw.filterIsInstance<Map<String, Any?>>()
+                        else -> emptyList()
+                    }
                 OrderRow(
-                        id = (row["id"] as Double).toInt(),
-                        total_amount = (row["total_amount"] as Double).toInt(),
-                        status = row["status"].toString(),
-                        order_date = row["order_date"].toString(),
-                        shipping_address = row["shipping_address"]?.toString(),
-                        payment_method = row["payment_method"]?.toString(),
-                        tracking_number = row["tracking_number"]?.toString(),
-                        items =
-                                items.map { i ->
-                                    OrderItem(
-                                            product_id = i["product_id"].toString(),
-                                            qty = (i["qty"] as Double).toInt(),
-                                            price = (i["price"] as Double).toInt()
-                                    )
-                                }
+                    id = (row["id"] as Double).toInt(),
+                    total_amount = (row["total_amount"] as Double).toInt(),
+                    status = row["status"].toString(),
+                    order_date = row["order_date"].toString(),
+                    shipping_address = row["shipping_address"]?.toString(),
+                    payment_method = row["payment_method"]?.toString(),
+                    tracking_number = row["tracking_number"]?.toString(),
+                    items = items.map { i ->
+                        OrderItem(
+                            product_id = i["product_id"].toString(),
+                            product_name = i["product_name"]?.toString() ?: "",
+                            qty = (i["qty"] as Double).toInt(),
+                            price = (i["price"] as Double).toInt()
+                        )
+                    }
                 )
             }
         }

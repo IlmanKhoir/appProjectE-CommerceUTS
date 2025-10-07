@@ -121,6 +121,7 @@ class OrderSummaryActivity : AppCompatActivity() {
                                 items = com.example.appprojek.domain.CartServiceAdapter().getItems().map { it ->
                                     com.example.appprojek.data.OrderRepository.OrderItem(
                                             product_id = it.product.id,
+                                            product_name = it.product.name,
                                             qty = it.quantity,
                                             price = it.product.priceRupiah
                                     )
