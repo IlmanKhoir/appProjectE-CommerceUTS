@@ -1,4 +1,5 @@
 <resources>
+    <string name="review_user_avatar_desc">Avatar pengguna untuk review</string>
     <string name="app_name">Dua Anak Mart</string>
     <string name="splash_title">Dua Anak Mart</string>
     <string name="splash_subtitle">Belanja hemat karya dua sahabat kecil</string>
@@ -22,4 +23,26 @@
     <string name="va_number_label">Nomor Virtual Account</string>
     <string name="copy">Salin</string>
     <string name="copied">Disalin</string>
+    <string name="dua_anak_mart">Dua Anak Mart</string>
+    <string name="detail_produk_title">Detail Produk</string>
+    <string name="product_name_label">Nama Produk</string>
+    <string name="rating_count">(128 review)</string>
+    <string name="product_price_label">Rp 25.000</string>
+    <string name="product_description">Deskripsi produk akan ditampilkan di sini. Produk ini memiliki kualitas yang baik dan sesuai dengan standar yang ditetapkan.</string>
+    <string name="quantity_label">Jumlah:</string>
+    <string name="decrease_desc">Kurangi jumlah produk</string>
+    <string name="increase_desc">Tambah jumlah produk</string>
+    <string name="wishlist_label">Wishlist</string>
+    <string name="wishlist_desc">Tambahkan ke wishlist</string>
+    <string name="add_to_cart_label">Tambah ke Keranjang</string>
+    <string name="add_to_cart_desc">Tambahkan produk ke keranjang</string>
+    <string name="review_rating_label">Review &amp; Rating</string>
+    <string name="write_review_label">Tulis Review</string>
+    <string name="write_review_desc">Tulis ulasan produk</string>
+    <string name="_1">1</string>
+    <string name="review_user_name">Nama Pengguna</string>
+    <string name="review_date_sample">12 Jan 2024</string>
+    <string name="review_comment_sample">Review pengguna akan ditampilkan di sini. Review ini memberikan informasi yang berguna tentang produk.</string>
+    <string name="review_helpful_sample">12 orang merasa review ini membantu</string>
+    <string name="review_rating_desc">Rating produk dari pengguna</string>
 </resources>

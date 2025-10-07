@@ -28,6 +28,8 @@ class OrderDetailActivity : AppCompatActivity() {
                                                 com.example.appprojek.shipping.ShippingTrackingActivity::class.java
                                         )
                                 intent.putExtra("order_id", o.orderId)
+                                // Tambahkan flag untuk menandai bahwa ini bukan pembukaan ulang
+                                intent.putExtra("is_new_tracking", true)
                                 startActivity(intent)
                         }
         }

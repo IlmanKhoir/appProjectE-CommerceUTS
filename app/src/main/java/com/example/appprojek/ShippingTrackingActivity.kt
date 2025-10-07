@@ -54,14 +54,24 @@ class ShippingTrackingActivity : AppCompatActivity() {
         private const val TAG = "ShippingTracking"
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
         // Ganti dengan IP address komputer Anda yang menjalankan server
-        private const val WEBSOCKET_URL = "ws:// 172.21.200.72/tracking"
+        private const val WEBSOCKET_URL = "ws://172.21.200.72/tracking"
         // Fallback untuk testing tanpa server
-        private const val USE_MOCK_DATA = true
+    private const val USE_MOCK_DATA = true
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(com.example.appprojek.R.layout.activity_shipping)
+
+        // Cek apakah activity ini dibuka dari halaman lain
+        val isNewTracking = intent.getBooleanExtra("is_new_tracking", false)
+
+        // Jika ini adalah pembukaan baru, lanjutkan seperti biasa
+        // Jika tidak (dibuka dari ShippingActivity), kembalikan ke halaman sebelumnya
+        if (!isNewTracking && !isTaskRoot) {
+            finish()
+            return
+        }
 
         // Setup toolbar with back button navigation to home
         setupToolbar()
@@ -101,6 +111,96 @@ class ShippingTrackingActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupClickListeners() {
+        // Setup click listeners for driver interaction buttons
+        val btnCallDriver = findViewById<com.google.android.material.button.MaterialButton>(com.example.appprojek.R.id.btnCallDriver)
+        val btnChatDriver = findViewById<com.google.android.material.button.MaterialButton>(com.example.appprojek.R.id.btnChatDriver)
+
+        btnCallDriver.setOnClickListener {
+            // Handle call driver action
+            Toast.makeText(this, "Menghubungi driver...", Toast.LENGTH_SHORT).show()
+        }
+
+        btnChatDriver.setOnClickListener {
+            // Handle chat with driver action
+            Toast.makeText(this, "Membuka chat dengan driver...", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun updateDriverInfo(name: String, eta: String, vehicleInfo: String) {
+        runOnUiThread {
+            val driverName = findViewById<android.widget.TextView>(com.example.appprojek.R.id.driverName)
+            val etaText = findViewById<android.widget.TextView>(com.example.appprojek.R.id.etaText)
+            val vehicleInfoText = findViewById<android.widget.TextView>(com.example.appprojek.R.id.vehicleInfo)
+
+            driverName.text = name
+            etaText.text = eta
+            vehicleInfoText.text = vehicleInfo
+        }
+    }
+
+    private fun updateStatus(status: String, message: String) {
+        runOnUiThread {
+            val statusText = findViewById<android.widget.TextView>(com.example.appprojek.R.id.statusText)
+            val statusIcon = findViewById<android.widget.ImageView>(com.example.appprojek.R.id.statusIcon)
+            val deliveryStage = findViewById<android.widget.TextView>(com.example.appprojek.R.id.deliveryStage)
+            val deliveryProgress = findViewById<com.google.android.material.progressindicator.LinearProgressIndicator>(com.example.appprojek.R.id.deliveryProgress)
+
+            statusText.text = message
+
+            // Update status icon and progress based on status
+            when (status) {
+                "picked_up" -> {
+                    statusIcon.setImageResource(android.R.drawable.ic_menu_mylocation)
+                    deliveryStage.text = "Paket Diambil"
+                    deliveryProgress.progress = 25
+                }
+                "in_transit" -> {
+                    statusIcon.setImageResource(android.R.drawable.ic_menu_directions)
+                    deliveryStage.text = "Dalam Perjalanan"
+                    deliveryProgress.progress = 50
+                }
+                "near_destination" -> {
+                    statusIcon.setImageResource(android.R.drawable.ic_menu_mylocation)
+                    deliveryStage.text = "Mendekati Tujuan"
+                    deliveryProgress.progress = 75
+                }
+                "delivered" -> {
+                    statusIcon.setImageResource(android.R.drawable.ic_menu_save)
+                    deliveryStage.text = "Paket Telah Sampai"
+                    deliveryProgress.progress = 100
+                }
+                else -> {
+                    statusIcon.setImageResource(android.R.drawable.ic_menu_info_details)
+                    deliveryStage.text = "Status Pengiriman"
+                    deliveryProgress.progress = 0
+                }
+            }
+        }
+    }
+
+    private fun updateRouteInfo(distance: String, time: String) {
+        runOnUiThread {
+            try {
+                val routeDistance = findViewById<android.widget.TextView>(com.example.appprojek.R.id.routeDistance)
+                val routeTime = findViewById<android.widget.TextView>(com.example.appprojek.R.id.routeTime)
+
+                routeDistance.text = "Jarak: $distance"
+                routeTime.text = "Estimasi: $time"
+
+                // Tampilkan overlay jika sebelumnya tersembunyi
+                routeInfoOverlay.visibility = View.VISIBLE
+            } catch (e: Exception) {
+                Log.e(TAG, "Error updating route info", e)
+            }
+        }
+    }
+
+    // Overload function tanpa parameter untuk backward compatibility
+    private fun updateRouteInfo() {
+        updateRouteInfo("Menghitung...", "Menghitung...")
+    }
+
     private fun setupMap() {
         // Configure map
         mapView.setTileSource(TileSourceFactory.MAPNIK)
@@ -114,15 +214,15 @@ class ShippingTrackingActivity : AppCompatActivity() {
 
         // Hide progress bar when map is ready
         mapView.addMapListener(
-                object : org.osmdroid.events.MapListener {
-                    override fun onScroll(event: org.osmdroid.events.ScrollEvent?): Boolean {
-                        return false
-                    }
-
-                    override fun onZoom(event: org.osmdroid.events.ZoomEvent?): Boolean {
-                        return false
-                    }
+            object : org.osmdroid.events.MapListener {
+                override fun onScroll(event: org.osmdroid.events.ScrollEvent?): Boolean {
+                    return false
                 }
+
+                override fun onZoom(event: org.osmdroid.events.ZoomEvent?): Boolean {
+                    return false
+                }
+            }
         )
 
         // Simulate map loaded
@@ -131,12 +231,12 @@ class ShippingTrackingActivity : AppCompatActivity() {
 
     private fun checkPermissions() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) !=
-                        PackageManager.PERMISSION_GRANTED
+            PackageManager.PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                    LOCATION_PERMISSION_REQUEST_CODE
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                LOCATION_PERMISSION_REQUEST_CODE
             )
         }
     }
@@ -147,58 +247,58 @@ class ShippingTrackingActivity : AppCompatActivity() {
         val request = Request.Builder().url(WEBSOCKET_URL).build()
 
         webSocket =
-                client.newWebSocket(
-                        request,
-                        object : WebSocketListener() {
-                            override fun onOpen(webSocket: WebSocket, response: Response) {
-                                runOnUiThread {
-                                    connectionStatus.findViewById<android.widget.TextView>(
-                                                    com.example.appprojek.R.id.connectionStatus
-                                            )
-                                            .text = "Terhubung"
-                                    connectionStatus.setBackgroundColor(
-                                            ContextCompat.getColor(
-                                                    this@ShippingTrackingActivity,
-                                                    com.example.appprojek.R.color.success_color
-                                            )
-                                    )
-                                    Log.d(TAG, "WebSocket connected")
-                                }
-                            }
-
-                            override fun onMessage(webSocket: WebSocket, text: String) {
-                                runOnUiThread { handleWebSocketMessage(text) }
-                            }
-
-                            override fun onFailure(
-                                    webSocket: WebSocket,
-                                    t: Throwable,
-                                    response: Response?
-                            ) {
-                                runOnUiThread {
-                                    connectionStatus.findViewById<android.widget.TextView>(
-                                                    com.example.appprojek.R.id.connectionStatus
-                                            )
-                                            .text = "Terputus"
-                                    connectionStatus.setBackgroundColor(
-                                            ContextCompat.getColor(
-                                                    this@ShippingTrackingActivity,
-                                                    com.example.appprojek.R.color.error_color
-                                            )
-                                    )
-                                    Log.e(TAG, "WebSocket failed", t)
-
-                                    // Retry connection after 5 seconds
-                                    webSocket.close(1000, "Retrying...")
-                                    mapView.postDelayed({ setupWebSocket() }, 5000)
-                                }
-                            }
-
-                            override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-                                Log.d(TAG, "WebSocket closed: $code - $reason")
-                            }
+            client.newWebSocket(
+                request,
+                object : WebSocketListener() {
+                    override fun onOpen(webSocket: WebSocket, response: Response) {
+                        runOnUiThread {
+                            connectionStatus.findViewById<android.widget.TextView>(
+                                com.example.appprojek.R.id.connectionStatus
+                            )
+                                .text = "Terhubung"
+                            connectionStatus.setBackgroundColor(
+                                ContextCompat.getColor(
+                                    this@ShippingTrackingActivity,
+                                    com.example.appprojek.R.color.success_color
+                                )
+                            )
+                            Log.d(TAG, "WebSocket connected")
                         }
-                )
+                    }
+
+                    override fun onMessage(webSocket: WebSocket, text: String) {
+                        runOnUiThread { handleWebSocketMessage(text) }
+                    }
+
+                    override fun onFailure(
+                        webSocket: WebSocket,
+                        t: Throwable,
+                        response: Response?
+                    ) {
+                        runOnUiThread {
+                            connectionStatus.findViewById<android.widget.TextView>(
+                                com.example.appprojek.R.id.connectionStatus
+                            )
+                                .text = "Terputus"
+                            connectionStatus.setBackgroundColor(
+                                ContextCompat.getColor(
+                                    this@ShippingTrackingActivity,
+                                    com.example.appprojek.R.color.error_color
+                                )
+                            )
+                            Log.e(TAG, "WebSocket failed", t)
+
+                            // Retry connection after 5 seconds
+                            webSocket.close(1000, "Retrying...")
+                            mapView.postDelayed({ setupWebSocket() }, 5000)
+                        }
+                    }
+
+                    override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+                        Log.d(TAG, "WebSocket closed: $code - $reason")
+                    }
+                }
+            )
     }
 
     private fun handleWebSocketMessage(rawMessage: String) {
@@ -248,7 +348,8 @@ class ShippingTrackingActivity : AppCompatActivity() {
         // Update or create driver marker
         if (driverMarker == null) {
             driverMarker = Marker(mapView)
-            driverMarker?.icon = ContextCompat.getDrawable(this, com.example.appprojek.R.drawable.ic_truck_moving)
+            // PERBAIKAN: Gunakan resource yang tersedia
+            driverMarker?.icon = ContextCompat.getDrawable(this, android.R.drawable.ic_menu_directions)
             driverMarker?.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
             mapView.overlays.add(driverMarker)
         }
@@ -259,8 +360,13 @@ class ShippingTrackingActivity : AppCompatActivity() {
         // Center map on driver location
         mapController.animateTo(newLocation)
 
-        // Update route info
-        updateRouteInfo()
+        // PERBAIKAN: Update route info dengan parameter
+        if (destinationLocation != null) {
+            val (distance, time) = calculateDistanceAndTime(newLocation, destinationLocation!!)
+            updateRouteInfo(distance, time)
+        } else {
+            updateRouteInfo("Menghitung...", "Menghitung...")
+        }
 
         mapView.invalidate()
     }
@@ -273,12 +379,11 @@ class ShippingTrackingActivity : AppCompatActivity() {
         routePolyline?.let { mapView.overlays.remove(it) }
 
         // Create new route polyline
-        routePolyline =
-                Polyline().apply {
-                    setPoints(route)
-                    outlinePaint.color = Color.GREEN
-                    outlinePaint.strokeWidth = 8f
-                }
+        routePolyline = Polyline().apply {
+            setPoints(route)
+            outlinePaint.color = Color.parseColor("#4CAF50") // Green color
+            outlinePaint.strokeWidth = 12f
+        }
 
         mapView.overlays.add(routePolyline)
 
@@ -288,104 +393,75 @@ class ShippingTrackingActivity : AppCompatActivity() {
 
             if (destinationMarker == null) {
                 destinationMarker = Marker(mapView)
-                destinationMarker?.icon =
-                        ContextCompat.getDrawable(this, android.R.drawable.ic_menu_mylocation)
+                // PERBAIKAN: Gunakan resource yang tersedia
+                destinationMarker?.icon = ContextCompat.getDrawable(this, android.R.drawable.ic_menu_mylocation)
                 destinationMarker?.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                 mapView.overlays.add(destinationMarker)
             }
 
             destinationMarker?.position = destinationLocation
             destinationMarker?.title = "Destination"
+
+            // PERBAIKAN: Update route info dengan perhitungan jarak dan waktu
+            if (driverLocation != null) {
+                val (distance, time) = calculateDistanceAndTime(driverLocation!!, destinationLocation!!)
+                updateRouteInfo(distance, time)
+            }
         }
 
         mapView.invalidate()
     }
 
-    private fun updateDriverInfo(driverName: String, eta: String, vehicleInfo: String) {
-        findViewById<android.widget.TextView>(com.example.appprojek.R.id.driverName).text = driverName
-        findViewById<android.widget.TextView>(com.example.appprojek.R.id.etaText).text = eta
-        findViewById<android.widget.TextView>(com.example.appprojek.R.id.vehicleInfo).text = vehicleInfo
+    private fun calculateDistanceAndTime(start: GeoPoint, end: GeoPoint): Pair<String, String> {
+        // Simple distance calculation (approximate)
+        val distanceInKm = calculateDistanceBetweenPoints(start, end)
+        val timeInMinutes = (distanceInKm * 2).toInt() // Assume 30 km/h average speed
 
-        // Sinkronkan status pengiriman sederhana via SharedPreferences (demo)
-        val prefs = getSharedPreferences("order_progress_prefs", MODE_PRIVATE)
-        val lowered = eta.lowercase()
-        val status = if (lowered.contains("tiba")) "DELIVERED" else "SHIPPED"
-        prefs.edit().putString("status_global", status).apply()
+        return "${String.format("%.1f", distanceInKm)} km" to "$timeInMinutes menit"
     }
 
-    private fun updateStatus(status: String, statusMessage: String) {
-        findViewById<android.widget.TextView>(com.example.appprojek.R.id.statusText).text = statusMessage
+    private fun calculateDistanceBetweenPoints(point1: GeoPoint, point2: GeoPoint): Double {
+        val earthRadius = 6371.0 // kilometers
 
-        // Update status icon based on status
-        val statusIcon = findViewById<android.widget.ImageView>(com.example.appprojek.R.id.statusIcon)
-        when (status) {
-            "picked_up" -> {
-                statusIcon.setImageResource(com.example.appprojek.R.drawable.ic_truck_moving)
-                statusIcon.setColorFilter(ContextCompat.getColor(this, com.example.appprojek.R.color.success_color))
-            }
-            "in_transit" -> {
-                statusIcon.setImageResource(com.example.appprojek.R.drawable.ic_truck_moving)
-                statusIcon.setColorFilter(ContextCompat.getColor(this, com.example.appprojek.R.color.primary_color))
-            }
-            "delivered" -> {
-                statusIcon.setImageResource(com.example.appprojek.R.drawable.ic_truck_moving)
-                statusIcon.setColorFilter(ContextCompat.getColor(this, com.example.appprojek.R.color.success_color))
-            }
-        }
-    }
+        val lat1 = Math.toRadians(point1.latitude)
+        val lon1 = Math.toRadians(point1.longitude)
+        val lat2 = Math.toRadians(point2.latitude)
+        val lon2 = Math.toRadians(point2.longitude)
 
-    private fun updateRouteInfo() {
-        driverLocation?.let { driver ->
-            destinationLocation?.let { dest ->
-                val distance = driver.distanceToAsDouble(dest)
-                val distanceKm = String.format("%.1f", distance / 1000)
+        val dLat = lat2 - lat1
+        val dLon = lon2 - lon1
 
-                findViewById<android.widget.TextView>(com.example.appprojek.R.id.routeDistance).text =
-                        "Jarak: $distanceKm km"
+        val a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1) * Math.cos(lat2) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2)
 
-                // Estimate time (assuming average speed of 30 km/h)
-                val estimatedTime = (distance / 1000 / 30 * 60).toInt()
-                findViewById<android.widget.TextView>(com.example.appprojek.R.id.routeTime).text =
-                        "Estimasi: $estimatedTime menit"
-            }
-        }
-    }
+        val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 
-    private fun setupClickListeners() {
-        findViewById<com.google.android.material.button.MaterialButton>(com.example.appprojek.R.id.btnCallDriver)
-                .setOnClickListener {
-                    // Implement call functionality
-                    Toast.makeText(this, "Memanggil driver...", Toast.LENGTH_SHORT).show()
-                }
-
-        findViewById<com.google.android.material.button.MaterialButton>(com.example.appprojek.R.id.btnChatDriver)
-                .setOnClickListener {
-                    // Implement chat functionality
-                    Toast.makeText(this, "Membuka chat...", Toast.LENGTH_SHORT).show()
-                }
+        return earthRadius * c
     }
 
     private fun setupMockData() {
         // Set connection status to connected
         connectionStatus.findViewById<android.widget.TextView>(com.example.appprojek.R.id.connectionStatus).text =
-                "Mock Data"
+            "Mock Data"
         connectionStatus.setBackgroundColor(ContextCompat.getColor(this, com.example.appprojek.R.color.success_color))
 
         // Initialize mock route
         val mockRoute =
-                listOf(
-                        GeoPoint(-6.2088, 106.8456),
-                        GeoPoint(-6.2095, 106.8458),
-                        GeoPoint(-6.2102, 106.8460),
-                        GeoPoint(-6.2109, 106.8462),
-                        GeoPoint(-6.2116, 106.8464),
-                        GeoPoint(-6.2123, 106.8466),
-                        GeoPoint(-6.2130, 106.8468),
-                        GeoPoint(-6.2137, 106.8470),
-                        GeoPoint(-6.2144, 106.8472),
-                        GeoPoint(-6.2146, 106.8451)
-                )
+            listOf(
+                GeoPoint(-6.2088, 106.8456),
+                GeoPoint(-6.2095, 106.8458),
+                GeoPoint(-6.2102, 106.8460),
+                GeoPoint(-6.2109, 106.8462),
+                GeoPoint(-6.2116, 106.8464),
+                GeoPoint(-6.2123, 106.8466),
+                GeoPoint(-6.2130, 106.8468),
+                GeoPoint(-6.2137, 106.8470),
+                GeoPoint(-6.2144, 106.8472),
+                GeoPoint(-6.2146, 106.8451)
+            )
 
+        // Pastikan route diupdate sebelum memulai animasi
         updateRoute(mockRoute)
 
         // Start mock location updates
@@ -399,61 +475,70 @@ class ShippingTrackingActivity : AppCompatActivity() {
     private fun startMockLocationUpdates() {
         val handler = Handler(Looper.getMainLooper())
         val mockRoute =
-                listOf(
-                        GeoPoint(-6.2088, 106.8456),
-                        GeoPoint(-6.2095, 106.8458),
-                        GeoPoint(-6.2102, 106.8460),
-                        GeoPoint(-6.2109, 106.8462),
-                        GeoPoint(-6.2116, 106.8464),
-                        GeoPoint(-6.2123, 106.8466),
-                        GeoPoint(-6.2130, 106.8468),
-                        GeoPoint(-6.2137, 106.8470),
-                        GeoPoint(-6.2144, 106.8472),
-                        GeoPoint(-6.2146, 106.8451)
-                )
+            listOf(
+                GeoPoint(-6.2088, 106.8456),
+                GeoPoint(-6.2095, 106.8458),
+                GeoPoint(-6.2102, 106.8460),
+                GeoPoint(-6.2109, 106.8462),
+                GeoPoint(-6.2116, 106.8464),
+                GeoPoint(-6.2123, 106.8466),
+                GeoPoint(-6.2130, 106.8468),
+                GeoPoint(-6.2137, 106.8470),
+                GeoPoint(-6.2144, 106.8472),
+                GeoPoint(-6.2146, 106.8451)
+            )
 
         var currentIndex = 0
 
         val runnable =
-                object : Runnable {
-                    override fun run() {
-                        if (currentIndex < mockRoute.size) {
-                            val location = mockRoute[currentIndex]
-                            updateDriverLocation(location.latitude, location.longitude)
+            object : Runnable {
+                override fun run() {
+                    if (currentIndex < mockRoute.size) {
+                        val location = mockRoute[currentIndex]
+                        updateDriverLocation(location.latitude, location.longitude)
 
-                            // Update ETA
-                            val remainingPoints = mockRoute.size - currentIndex - 1
-                            val eta =
-                                    if (remainingPoints > 0) "${remainingPoints * 2} menit"
-                                    else "Tiba"
-                            updateDriverInfo("Ahmad Supriadi", eta, "B 1234 ABC\nMerah - Box Truck")
+                        // PERBAIKAN: Hitung jarak dan waktu berdasarkan posisi saat ini
+                        val currentLocation = mockRoute[currentIndex]
+                        val destination = mockRoute.last()
+                        val (distance, time) = calculateDistanceAndTime(currentLocation, destination)
 
-                            // Update status
-                            when {
-                                currentIndex == 0 ->
-                                        updateStatus("picked_up", "Driver telah mengambil paket")
-                                currentIndex < mockRoute.size - 1 ->
-                                        updateStatus("in_transit", "Driver sedang dalam perjalanan")
-                                else -> updateStatus("delivered", "Paket telah sampai tujuan")
-                            }
+                        val eta = if (currentIndex < mockRoute.size - 1) time else "Tiba"
+                        updateDriverInfo("Ahmad Supriadi", eta, "B 1234 ABC\nMerah - Box Truck")
+                        updateRouteInfo(distance, time)
 
-                            currentIndex++
-                        } else {
-                            // Reset for demo
-                            currentIndex = 0
+                        // Update status
+                        when {
+                            currentIndex == 0 ->
+                                updateStatus("picked_up", "Driver telah mengambil paket")
+                            currentIndex < mockRoute.size - 1 ->
+                                updateStatus("in_transit", "Driver sedang dalam perjalanan")
+                            else -> updateStatus("delivered", "Paket telah sampai tujuan")
                         }
 
-                        handler.postDelayed(this, 3000) // Update every 3 seconds
+                        currentIndex++
+
+                        if (currentIndex < mockRoute.size) {
+                            handler.postDelayed(this, 3000) // Update every 3 seconds
+                        } else {
+                            // Pastikan jalur tetap terlihat setelah animasi selesai
+                            updateRoute(mockRoute)
+
+                            // Tampilkan pesan ketika sudah sampai
+                            Toast.makeText(this@ShippingTrackingActivity,
+                                "Pengiriman telah sampai tujuan",
+                                Toast.LENGTH_LONG).show()
+                        }
                     }
                 }
+            }
 
         handler.post(runnable)
     }
 
     override fun onRequestPermissionsResult(
-            requestCode: Int,
-            permissions: Array<out String>,
-            grantResults: IntArray
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
@@ -461,11 +546,11 @@ class ShippingTrackingActivity : AppCompatActivity() {
                 Log.d(TAG, "Location permission granted")
             } else {
                 Snackbar.make(
-                                mapView,
-                                "Location permission required for tracking",
-                                Snackbar.LENGTH_LONG
-                        )
-                        .show()
+                    mapView,
+                    "Location permission required for tracking",
+                    Snackbar.LENGTH_LONG
+                )
+                    .show()
             }
         }
     }

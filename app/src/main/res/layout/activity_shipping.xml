@@ -210,6 +210,70 @@
                     android:gravity="end" />
 
             </LinearLayout>
+            
+            <!-- Delivery Progress Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp">
+                
+                <TextView
+                    android:id="@+id/deliveryStage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Status Pengiriman"
+                    android:textAlignment="center"
+                    android:textStyle="bold" />
+                    
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/deliveryProgress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="4dp"
+                    app:trackCornerRadius="4dp"
+                    app:indicatorColor="@color/success_color"
+                    app:trackColor="@color/light_gray" />
+                    
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Diambil"
+                        android:textSize="10sp" />
+                        
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Perjalanan"
+                        android:textAlignment="center"
+                        android:textSize="10sp" />
+                        
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Mendekati"
+                        android:textAlignment="center"
+                        android:textSize="10sp" />
+                        
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Sampai"
+                        android:textAlignment="viewEnd"
+                        android:textSize="10sp" />
+                </LinearLayout>
+            </LinearLayout>
 
             <!-- Action Buttons -->
             <LinearLayout
@@ -242,13 +306,11 @@
                     app:iconTint="@color/primary_color"
                     style="@style/Widget.Material3.Button.OutlinedButton" />
 
-    </LinearLayout>
+            </LinearLayout>
 
-</LinearLayout>
+        </LinearLayout>
 
     </com.google.android.material.card.MaterialCardView>
-
-    <!-- Route Info Overlay -->
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
 
