@@ -54,7 +54,7 @@ class ShippingTrackingActivity : AppCompatActivity() {
         private const val TAG = "ShippingTracking"
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
         // Ganti dengan IP address komputer Anda yang menjalankan server
-        private const val WEBSOCKET_URL = "ws://172.21.200.72/tracking"
+       private const val WEBSOCKET_URL = "ws://192.168.1.19/tracking"
         // Fallback untuk testing tanpa server
     private const val USE_MOCK_DATA = true
     }
@@ -83,11 +83,7 @@ class ShippingTrackingActivity : AppCompatActivity() {
         setupMap()
         checkPermissions()
 
-        if (USE_MOCK_DATA) {
-            setupMockData()
-        } else {
-            setupWebSocket()
-        }
+        setupMockData()
 
         setupClickListeners()
     }
@@ -372,44 +368,52 @@ class ShippingTrackingActivity : AppCompatActivity() {
     }
 
     private fun updateRoute(route: List<GeoPoint>) {
-        routePoints.clear()
-        routePoints.addAll(route)
-
-        // Remove existing route
-        routePolyline?.let { mapView.overlays.remove(it) }
-
-        // Create new route polyline
-        routePolyline = Polyline().apply {
-            setPoints(route)
-            outlinePaint.color = Color.parseColor("#4CAF50") // Green color
-            outlinePaint.strokeWidth = 12f
-        }
-
-        mapView.overlays.add(routePolyline)
-
-        // Add destination marker
-        if (route.isNotEmpty()) {
-            destinationLocation = route.last()
-
-            if (destinationMarker == null) {
-                destinationMarker = Marker(mapView)
-                // PERBAIKAN: Gunakan resource yang tersedia
-                destinationMarker?.icon = ContextCompat.getDrawable(this, android.R.drawable.ic_menu_mylocation)
-                destinationMarker?.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-                mapView.overlays.add(destinationMarker)
+        Thread {
+            val snappedRoute = try {
+                com.example.appprojek.util.OsrmUtil.matchRoute(route)
+            } catch (e: Exception) {
+                emptyList<GeoPoint>()
             }
+            runOnUiThread {
+                val finalRoute = snappedRoute.ifEmpty { route }
+                routePoints.clear()
+                routePoints.addAll(finalRoute)
 
-            destinationMarker?.position = destinationLocation
-            destinationMarker?.title = "Destination"
+                // Remove existing route
+                routePolyline?.let { mapView.overlays.remove(it) }
 
-            // PERBAIKAN: Update route info dengan perhitungan jarak dan waktu
-            if (driverLocation != null) {
-                val (distance, time) = calculateDistanceAndTime(driverLocation!!, destinationLocation!!)
-                updateRouteInfo(distance, time)
+                // Create new route polyline
+                routePolyline = Polyline().apply {
+                    setPoints(finalRoute)
+                    outlinePaint.color = Color.parseColor("#4CAF50") // Green color
+                    outlinePaint.strokeWidth = 12f
+                }
+
+                mapView.overlays.add(routePolyline)
+
+                // Add destination marker
+                if (finalRoute.isNotEmpty()) {
+                    destinationLocation = finalRoute.last()
+
+                    if (destinationMarker == null) {
+                        destinationMarker = Marker(mapView)
+                        destinationMarker?.icon = ContextCompat.getDrawable(this, android.R.drawable.ic_menu_mylocation)
+                        destinationMarker?.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
+                        mapView.overlays.add(destinationMarker)
+                    }
+
+                    destinationMarker?.position = destinationLocation
+                    destinationMarker?.title = "Destination"
+
+                    if (driverLocation != null) {
+                        val (distance, time) = calculateDistanceAndTime(driverLocation!!, destinationLocation!!)
+                        updateRouteInfo(distance, time)
+                    }
+                }
+
+                mapView.invalidate()
             }
-        }
-
-        mapView.invalidate()
+        }.start()
     }
 
     private fun calculateDistanceAndTime(start: GeoPoint, end: GeoPoint): Pair<String, String> {
@@ -446,20 +450,17 @@ class ShippingTrackingActivity : AppCompatActivity() {
             "Mock Data"
         connectionStatus.setBackgroundColor(ContextCompat.getColor(this, com.example.appprojek.R.color.success_color))
 
-        // Initialize mock route
-        val mockRoute =
-            listOf(
-                GeoPoint(-6.2088, 106.8456),
-                GeoPoint(-6.2095, 106.8458),
-                GeoPoint(-6.2102, 106.8460),
-                GeoPoint(-6.2109, 106.8462),
-                GeoPoint(-6.2116, 106.8464),
-                GeoPoint(-6.2123, 106.8466),
-                GeoPoint(-6.2130, 106.8468),
-                GeoPoint(-6.2137, 106.8470),
-                GeoPoint(-6.2144, 106.8472),
-                GeoPoint(-6.2146, 106.8451)
-            )
+        // Mock route: Monas to Bundaran HI via Jalan MH Thamrin (Jakarta)
+        val mockRoute = listOf(
+            GeoPoint(-6.175392, 106.827153), // Monas
+            GeoPoint(-6.181616, 106.828216), // Gambir
+            GeoPoint(-6.186484, 106.829518), // Jalan Medan Merdeka Selatan
+            GeoPoint(-6.190807, 106.830978), // Jalan MH Thamrin (dekat Sarinah)
+            GeoPoint(-6.193125, 106.832512), // Thamrin City
+            GeoPoint(-6.197584, 106.834091), // Plaza Indonesia
+            GeoPoint(-6.200497, 106.836447), // Bundaran HI
+            GeoPoint(-6.201905, 106.837563)  // Sisi selatan Bundaran HI
+        )
 
         // Pastikan route diupdate sebelum memulai animasi
         updateRoute(mockRoute)
@@ -474,19 +475,16 @@ class ShippingTrackingActivity : AppCompatActivity() {
 
     private fun startMockLocationUpdates() {
         val handler = Handler(Looper.getMainLooper())
-        val mockRoute =
-            listOf(
-                GeoPoint(-6.2088, 106.8456),
-                GeoPoint(-6.2095, 106.8458),
-                GeoPoint(-6.2102, 106.8460),
-                GeoPoint(-6.2109, 106.8462),
-                GeoPoint(-6.2116, 106.8464),
-                GeoPoint(-6.2123, 106.8466),
-                GeoPoint(-6.2130, 106.8468),
-                GeoPoint(-6.2137, 106.8470),
-                GeoPoint(-6.2144, 106.8472),
-                GeoPoint(-6.2146, 106.8451)
-            )
+        val mockRoute = listOf(
+            GeoPoint(-6.175392, 106.827153), // Monas
+            GeoPoint(-6.181616, 106.828216), // Gambir
+            GeoPoint(-6.186484, 106.829518), // Jalan Medan Merdeka Selatan
+            GeoPoint(-6.190807, 106.830978), // Jalan MH Thamrin (dekat Sarinah)
+            GeoPoint(-6.193125, 106.832512), // Thamrin City
+            GeoPoint(-6.197584, 106.834091), // Plaza Indonesia
+            GeoPoint(-6.200497, 106.836447), // Bundaran HI
+            GeoPoint(-6.201905, 106.837563)  // Sisi selatan Bundaran HI
+        )
 
         var currentIndex = 0
 
@@ -567,9 +565,6 @@ class ShippingTrackingActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        if (!USE_MOCK_DATA) {
-            webSocket.close(1000, "Activity destroyed")
-            client.dispatcher.executorService.shutdown()
-        }
+        // Tidak perlu menutup WebSocket jika menggunakan mock data
     }
 }

@@ -14,6 +14,7 @@ class UserRepository(private val gson: Gson = Gson()) {
                 val success: Boolean,
                 val user_id: Int?,
                 val email: String?,
+                val name: String?,
                 val phone: String?,
                 val address: String?,
                 val error: String?
@@ -31,6 +32,10 @@ class UserRepository(private val gson: Gson = Gson()) {
                                 if (obj.has("user_id") && !obj.get("user_id").isJsonNull)
                                         obj.get("user_id").asInt
                                 else null
+                        val name =
+                                if (obj.has("name") && !obj.get("name").isJsonNull)
+                                        obj.get("name").asString
+                                else null
                         val phone =
                                 if (obj.has("phone") && !obj.get("phone").isJsonNull)
                                         obj.get("phone").asString
@@ -43,13 +48,14 @@ class UserRepository(private val gson: Gson = Gson()) {
                                 if (obj.has("error") && !obj.get("error").isJsonNull)
                                         obj.get("error").asString
                                 else null
-                        LoginResult(success, userId, userEmail, phone, address, error)
+                        LoginResult(success, userId, userEmail, name, phone, address, error)
                 } catch (e: Exception) {
                         Log.e("UserRepository", "Invalid JSON from server: $rawBody", e)
                         LoginResult(
                                 false,
                                 null,
                                 fallbackEmail,
+                                null,
                                 null,
                                 null,
                                 "Invalid server response"
@@ -103,6 +109,7 @@ class UserRepository(private val gson: Gson = Gson()) {
                                                 false,
                                                 null,
                                                 email,
+                                                null, // name
                                                 null,
                                                 null,
                                                 "HTTP ${resp.code}: $body"
@@ -139,6 +146,7 @@ class UserRepository(private val gson: Gson = Gson()) {
                                                 false,
                                                 null,
                                                 email,
+                                                null, // name
                                                 null,
                                                 null,
                                                 "HTTP ${resp.code}: $body"
@@ -165,6 +173,7 @@ class UserRepository(private val gson: Gson = Gson()) {
                                                 false,
                                                 null,
                                                 email,
+                                                null, // name
                                                 null,
                                                 null,
                                                 "HTTP ${resp.code}: $body"
@@ -181,7 +190,9 @@ class UserRepository(private val gson: Gson = Gson()) {
                 email: String?,
                 name: String?,
                 phone: String?,
-                address: String?
+                address: String?,
+                latitude: Double? = null,
+                longitude: Double? = null
         ): Boolean {
                 val form = mutableMapOf<String, String>()
                 userId?.let { form["user_id"] = it.toString() }
@@ -202,6 +213,8 @@ class UserRepository(private val gson: Gson = Gson()) {
                         form["alamat"] = it
                         form["alamat_lengkap"] = it
                 }
+                latitude?.let { form["latitude"] = it.toString() }
+                longitude?.let { form["longitude"] = it.toString() }
 
                 val req = ApiClient.buildPostForm("users.php?action=update", form)
                 ApiClient.httpClient.newCall(req).execute().use { resp ->
@@ -210,8 +223,13 @@ class UserRepository(private val gson: Gson = Gson()) {
                                 Log.e("UserRepository", "Update failed HTTP ${resp.code}: $body")
                                 return false
                         }
-                        val obj = JsonParser.parseString(body).asJsonObject
-                        return obj.get("success")?.asBoolean == true
+                        try {
+                            val obj = JsonParser.parseString(body).asJsonObject
+                            return obj.get("success")?.asBoolean == true
+                        } catch (e: Exception) {
+                            Log.e("UserRepository", "Malformed JSON response: $body", e)
+                            return false
+                        }
                 }
         }
 }

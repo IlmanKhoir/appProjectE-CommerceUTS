@@ -130,22 +130,21 @@ class AuthManager(private val context: Context) {
         prefs.edit().putString("user_data", userJson).putBoolean("guest_mode", false).apply()
     }
 
-    // Save minimal user from backend login/register, with optional phone/address
+    // Save user from backend login/register, with name, phone, address
     fun saveBackendUser(
-            userId: Int,
-            email: String,
-            phone: String? = null,
-            address: String? = null
+        userId: Int,
+        email: String,
+        name: String? = null,
+        phone: String? = null,
+        address: String? = null
     ) {
-        val existing = getCurrentUser()
-        val user =
-                User(
-                        id = userId.toString(),
-                        email = email,
-                        name = existing?.name ?: "",
-                        phone = phone ?: existing?.phone ?: "",
-                        address = address ?: existing?.address ?: ""
-                )
+        val user = User(
+            id = userId.toString(),
+            email = email,
+            name = name ?: "",
+            phone = phone ?: "",
+            address = address ?: ""
+        )
         saveUser(user)
     }
 }

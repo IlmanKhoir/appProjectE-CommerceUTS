@@ -59,7 +59,7 @@ class ProfileFragment : Fragment() {
         if (user != null) {
             binding.tvUserName.text = user.name
             binding.tvUserEmail.text = user.email
-            binding.tvUserPhone.text = user.phone
+            binding.tvUserPhone.text = user.address
         } else {
             startActivity(Intent(requireContext(), LoginActivity::class.java))
             requireActivity().finish()

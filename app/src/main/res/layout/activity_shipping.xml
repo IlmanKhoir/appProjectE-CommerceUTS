@@ -90,13 +90,16 @@
 
     <!-- Bottom Card with Driver Info -->
     <com.google.android.material.card.MaterialCardView
-        android:id="@+id/driverInfoCard"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_margin="16dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="8dp">
+    android:id="@+id/driverInfoCard"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="bottom"
+    android:layout_margin="16dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="16dp"
+    android:background="@drawable/card_blur_bg"
+    app:strokeColor="@color/light_gray"
+    app:strokeWidth="1dp">
 
         <LinearLayout
         android:layout_width="match_parent"
@@ -150,10 +153,12 @@
 
     <ImageView
                     android:id="@+id/driverAvatar"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
                     android:src="@drawable/ic_driver_avatar"
-                    android:background="@drawable/circle_background" />
+                    android:background="@drawable/avatar_shadow_circle"
+                    android:elevation="8dp"
+                    android:padding="4dp" />
 
     <LinearLayout
                     android:layout_width="0dp"
@@ -230,12 +235,13 @@
                 <com.google.android.material.progressindicator.LinearProgressIndicator
                     android:id="@+id/deliveryProgress"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="16dp"
                     android:layout_marginTop="4dp"
                     android:layout_marginBottom="4dp"
-                    app:trackCornerRadius="4dp"
+                    app:trackCornerRadius="8dp"
                     app:indicatorColor="@color/success_color"
-                    app:trackColor="@color/light_gray" />
+                    app:trackColor="@color/light_gray"
+                    app:showAnimationBehavior="outward" />
                     
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -292,7 +298,10 @@
                     android:textColor="@android:color/white"
                     app:icon="@drawable/ic_phone"
                     app:iconTint="@android:color/white"
-                    style="@style/Widget.Material3.Button" />
+                    style="@style/Widget.Material3.Button"
+                    app:cornerRadius="16dp"
+                    app:iconGravity="textStart"
+                    app:rippleColor="@color/primary_color" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnChatDriver"
@@ -304,7 +313,10 @@
                     android:textColor="@color/primary_color"
                     app:icon="@drawable/ic_chat"
                     app:iconTint="@color/primary_color"
-                    style="@style/Widget.Material3.Button.OutlinedButton" />
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    app:cornerRadius="16dp"
+                    app:iconGravity="textStart"
+                    app:rippleColor="@color/primary_color" />
 
             </LinearLayout>
 

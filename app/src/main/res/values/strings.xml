@@ -1,4 +1,15 @@
 <resources>
+    <string name="store_hero_desc">Logo toko Dua Anak Mart</string>
+    <string name="welcome_message">Selamat datang di Dua Anak Mart!</string>
+    <string name="promo_message">Promo Oktober: Diskon hingga 50% untuk produk tertentu!</string>
+    <string name="see_promo">Lihat Promo</string>
+    <string name="category">Kategori</string>
+    <string name="groceries">Sembako</string>
+    <string name="groceries_desc">Ikon kategori sembako</string>
+    <string name="fruits">Buah</string>
+    <string name="fruits_desc">Ikon kategori buah</string>
+    <string name="drinks">Minuman</string>
+    <string name="drinks_desc">Ikon kategori minuman</string>
     <string name="review_user_avatar_desc">Avatar pengguna untuk review</string>
     <string name="app_name">Dua Anak Mart</string>
     <string name="splash_title">Dua Anak Mart</string>

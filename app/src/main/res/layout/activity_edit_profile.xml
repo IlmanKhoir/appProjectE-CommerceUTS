@@ -105,6 +105,15 @@
                             android:maxLength="200"
                             android:inputType="textMultiLine" />
                     </com.google.android.material.textfield.TextInputLayout>
+                    
+                    <!-- Tombol untuk mengambil lokasi saat ini -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/buttonUseLocation"
+                        style="@style/App.Button.Outline"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Gunakan Lokasi Saat Ini" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

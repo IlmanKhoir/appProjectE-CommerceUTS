@@ -1,9 +1,16 @@
 package com.example.appprojek.profile
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.tasks.CancellationTokenSource
 import com.example.appprojek.R
 import com.example.appprojek.data.UserRepository
 import com.example.appprojek.util.AuthManager
@@ -12,6 +19,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class EditProfileActivity : AppCompatActivity() {
+        private val LOCATION_PERMISSION_REQUEST = 1001
+        private lateinit var fusedLocationClient: FusedLocationProviderClient
+        private val cancellationTokenSource = CancellationTokenSource()
         override fun onCreate(savedInstanceState: Bundle?) {
                 super.onCreate(savedInstanceState)
                 setContentView(R.layout.activity_edit_profile)
@@ -28,10 +38,96 @@ class EditProfileActivity : AppCompatActivity() {
                 val progress = findViewById<com.google.android.material.progressindicator.LinearProgressIndicator>(R.id.progressBar)
                 val layoutPhone = findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.layoutPhone)
                 val layoutAddress = findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.layoutAddress)
+                val buttonUseLocation = findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonUseLocation)
 
                 nameField.setText(user?.name ?: "")
                 phoneField.setText(user?.phone ?: "")
                 addressField.setText(user?.address ?: "")
+
+                                fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+                                buttonUseLocation.setOnClickListener {
+                                                // Check permission
+                                                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                                                                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), LOCATION_PERMISSION_REQUEST)
+                                                                return@setOnClickListener
+                                                }
+                                                // Get last known location
+                                                progress.visibility = android.view.View.VISIBLE
+                                                fusedLocationClient.getCurrentLocation(com.google.android.gms.location.LocationRequest.PRIORITY_HIGH_ACCURACY, cancellationTokenSource.token)
+                                                        .addOnSuccessListener { location ->
+                                                                if (location != null) {
+                                                                        val lat = location.latitude
+                                                                        val lng = location.longitude
+                                                                        val coordText = "${'$'}lat,${'$'}lng"
+
+                                                                        // Reverse geocoding in background
+                                                                        lifecycleScope.launch {
+                                                                                val humanAddress = withContext(Dispatchers.IO) {
+                                                                                        try {
+                                                                                                val geocoder = android.location.Geocoder(this@EditProfileActivity)
+                                                                                                val list = geocoder.getFromLocation(lat, lng, 1)
+                                                                                                if (!list.isNullOrEmpty()) {
+                                                                                                        val addr = list[0]
+                                                                                                        val parts = mutableListOf<String>()
+                                                                                                        addr.thoroughfare?.let { parts.add(it) }
+                                                                                                        addr.subLocality?.let { parts.add(it) }
+                                                                                                        addr.locality?.let { parts.add(it) }
+                                                                                                        addr.adminArea?.let { parts.add(it) }
+                                                                                                        addr.postalCode?.let { parts.add(it) }
+                                                                                                        addr.countryName?.let { parts.add(it) }
+                                                                                                        parts.joinToString(", ")
+                                                                                                } else null
+                                                                                                } catch (e: Exception) {
+                                                                                                        null
+                                                                                                }
+                                                                                        }
+
+                                                                                // If we got a human-readable address, show it; otherwise show lat,lng
+                                                                                val display = humanAddress ?: coordText
+                                                                                addressField.setText(display)
+
+                                                                                // Always save lat/lng to backend and send human-readable address if available
+                                                                                val repo = UserRepository()
+                                                                                val success = withContext(Dispatchers.IO) {
+                                                                                                repo.updateProfile(
+                                                                                                                userId = user?.id?.toIntOrNull(),
+                                                                                                                email = user?.email,
+                                                                                                                name = null,
+                                                                                                                phone = null,
+                                                                                                                address = display,
+                                                                                                                latitude = lat,
+                                                                                                                longitude = lng
+                                                                                                )
+                                                                                }
+
+                                                                                if (success) {
+                                                                                        Toast.makeText(this@EditProfileActivity, "Lokasi tersimpan", Toast.LENGTH_SHORT).show()
+                                                                                        // update local session
+                                                                                        if (user != null && user.id.isNotEmpty()) {
+                                                                                                AuthManager(this@EditProfileActivity).saveBackendUser(
+                                                                                                        userId = user.id.toInt(),
+                                                                                                        email = user.email,
+                                                                                                        name = user.name ?: "",
+                                                                                                        phone = user.phone ?: "",
+                                                                                                        address = display
+                                                                                                )
+                                                                                        }
+                                                                                } else {
+                                                                                        Toast.makeText(this@EditProfileActivity, "Gagal menyimpan lokasi", Toast.LENGTH_SHORT).show()
+                                                                                }
+                                                                                progress.visibility = android.view.View.GONE
+                                                                        }
+                                                                } else {
+                                                                        progress.visibility = android.view.View.GONE
+                                                                        Toast.makeText(this, "Tidak dapat mendapatkan lokasi saat ini", Toast.LENGTH_SHORT).show()
+                                                                }
+                                                        }
+                                                        .addOnFailureListener { e ->
+                                                                progress.visibility = android.view.View.GONE
+                                                                Toast.makeText(this, "Gagal mengambil lokasi: ${'$'}{e.message}", Toast.LENGTH_SHORT).show()
+                                                        }
+                                }
 
                 findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonSave)
                         .setOnClickListener {
@@ -61,12 +157,26 @@ class EditProfileActivity : AppCompatActivity() {
                                         progress.visibility = android.view.View.VISIBLE
                                         val repo = UserRepository()
                                         val success = withContext(Dispatchers.IO) {
+                                                // If address is in 'lat,lng' format, send lat/lng fields too
+                                                var latVal: Double? = null
+                                                var lngVal: Double? = null
+                                                val parts = address.split(',').map { it.trim() }
+                                                if (parts.size == 2) {
+                                                        try {
+                                                                latVal = parts[0].toDouble()
+                                                                lngVal = parts[1].toDouble()
+                                                        } catch (e: Exception) {
+                                                                // ignore parse errors
+                                                        }
+                                                }
                                                 repo.updateProfile(
                                                         userId = user?.id?.toIntOrNull(),
                                                         email = user?.email,
                                                         name = name,
                                                         phone = phone,
-                                                        address = address
+                                                        address = address,
+                                                        latitude = latVal,
+                                                        longitude = lngVal
                                                 )
                                         }
                                         if (success) {
@@ -76,6 +186,7 @@ class EditProfileActivity : AppCompatActivity() {
                                                                 .saveBackendUser(
                                                                         userId = user.id.toInt(),
                                                                         email = user.email,
+                                                                        name = name,
                                                                         phone = phone,
                                                                         address = address
                                                                 )
@@ -89,6 +200,23 @@ class EditProfileActivity : AppCompatActivity() {
                                         progress.visibility = android.view.View.GONE
                                 }
                         }
+        }
+
+        override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+                if (requestCode == LOCATION_PERMISSION_REQUEST) {
+                        if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                                // permission granted - simulate click on button to fetch location
+                                findViewById<com.google.android.material.button.MaterialButton>(R.id.buttonUseLocation).performClick()
+                        } else {
+                                Toast.makeText(this, "Permission lokasi diperlukan", Toast.LENGTH_SHORT).show()
+                        }
+                }
+        }
+
+        override fun onDestroy() {
+                super.onDestroy()
+                cancellationTokenSource.cancel()
         }
 }
 

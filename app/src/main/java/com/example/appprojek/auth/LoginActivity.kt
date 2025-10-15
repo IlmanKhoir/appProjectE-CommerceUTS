@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+
 class LoginActivity : AppCompatActivity() {
     private lateinit var binding: ActivityLoginBinding
     private val authManager = AuthManager(this)
@@ -65,12 +66,13 @@ class LoginActivity : AppCompatActivity() {
                 binding.progressBar.visibility = android.view.View.GONE
 
                 if (result.success && result.user_id != null && result.email != null) {
-                    authManager.saveBackendUser(
-                            result.user_id,
-                            result.email,
-                            result.phone,
-                            result.address
-                    )
+            authManager.saveBackendUser(
+                result.user_id,
+                result.email,
+                result.name,
+                result.phone,
+                result.address
+            )
                     Toast.makeText(this@LoginActivity, "Login berhasil", Toast.LENGTH_SHORT).show()
                     startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                     finish()

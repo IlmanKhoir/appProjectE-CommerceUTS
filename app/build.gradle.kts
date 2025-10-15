@@ -44,6 +44,12 @@ android {
     buildFeatures {
         viewBinding = true
     }
+    packagingOptions {
+        jniLibs {
+            // Use legacy packaging for JNI libs to avoid LOAD segment alignment issues
+            useLegacyPackaging = true
+        }
+    }
     externalNativeBuild {
         cmake {
             path = file("src/main/cpp/CMakeLists.txt")

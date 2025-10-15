@@ -15,6 +15,11 @@
         <item name="android:textAllCaps">false</item>
     </style>
 
+    <style name="App.Button.Outline" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="android:layout_height">48dp</item>
+        <item name="android:textAllCaps">false</item>
+    </style>
+
     <!-- Cards -->
     <style name="App.Card" parent="Widget.Material3.CardView.Elevated">
         <item name="cardCornerRadius">16dp</item>

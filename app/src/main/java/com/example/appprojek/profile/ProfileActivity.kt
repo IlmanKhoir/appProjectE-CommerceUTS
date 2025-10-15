@@ -67,4 +67,9 @@ class ProfileActivity : AppCompatActivity() {
             finish()
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        loadUserData()
+    }
 }

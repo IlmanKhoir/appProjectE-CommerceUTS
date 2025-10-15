@@ -7,7 +7,7 @@ import okhttp3.Request
 object ApiClient {
     // Set this to your PHP server base URL, without trailing slash
     // Example: http://192.168.1.10/appprojek
-    var BASE_URL: String = "http://192.168.1.17/appprojek"
+    var BASE_URL: String = "http://192.168.1.19/appprojek"
 
     val httpClient: OkHttpClient by lazy { OkHttpClient() }
 

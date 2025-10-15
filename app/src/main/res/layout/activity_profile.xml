@@ -54,10 +54,10 @@
 
                     <TextView
                         android:id="@+id/tvUserName"
+                        style="@style/App.Text.Title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        style="@style/App.Text.Title"
                         android:text="Nama Pengguna"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
@@ -65,25 +65,37 @@
 
                     <TextView
                         android:id="@+id/tvUserEmail"
+                        style="@style/App.Text.Caption"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        style="@style/App.Text.Caption"
+                        android:layout_marginTop="16dp"
                         android:text="user@example.com"
                         app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.509"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/tvUserName" />
 
                     <TextView
-                        android:id="@+id/tvUserPhone"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:id="@+id/tvUserAddress"
                         style="@style/App.Text.Caption"
-                        android:text="081234567890"
+                        android:layout_width="6dp"
+                        android:layout_height="10dp"
+                        android:layout_marginTop="4dp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toBottomOf="@id/tvUserEmail" />
+
+                    <TextView
+                        android:id="@+id/tvUserPhone"
+                        style="@style/App.Text.Caption"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="hahaha@gmail.com"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.504"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="@+id/tvUserAddress" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnEditProfile"
@@ -180,7 +192,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_arrow_forward"
-                            android:tint="@color/gray" />
+                            app:tint="@color/gray" />
                     </LinearLayout>
 
                     <View
@@ -218,7 +230,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_arrow_forward"
-                            android:tint="@color/gray" />
+                            app:tint="@color/gray" />
                     </LinearLayout>
 
                     <View
@@ -243,7 +255,7 @@
                             android:layout_height="24dp"
                             android:layout_marginEnd="16dp"
                             android:src="@drawable/ic_help"
-                            android:tint="@color/primary" />
+                            app:tint="@color/primary" />
 
                         <TextView
                             android:layout_width="0dp"
@@ -256,7 +268,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_arrow_forward"
-                            android:tint="@color/gray" />
+                            app:tint="@color/gray" />
                     </LinearLayout>
 
                 </LinearLayout>

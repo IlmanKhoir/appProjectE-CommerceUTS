@@ -85,15 +85,19 @@ class CategoryActivity : AppCompatActivity() {
 
     private fun filterProductsByCategory(categoryId: String) {
         val filteredProducts =
-                when (categoryId) {
-                    "food" ->
+                    when (categoryId) {
+                        "food" ->
                             allProducts.filter {
-                                it.id in listOf("p1", "p2", "p3", "p7", "p8", "p9", "p13", "p15")
+                                it.id in listOf("p2", "p3") // Roti Tawar, Mie Instant Goreng
                             }
-                    "kitchen" -> allProducts.filter { it.id in listOf("p4", "p5", "p11", "p12") }
-                    "snack" -> allProducts.filter { it.id in listOf("p6", "p10", "p14", "p16") }
-                    else -> allProducts
-                }
+                        "drink" ->
+                            allProducts.filter {
+                                it.id in listOf("p1", "p7", "p8", "p9", "p13", "p15") // Susu Kotak, Teh Botol, Kopi Susu, Air Mineral, Yogurt Strawberry, Jus Jeruk
+                            }
+                        "kitchen" -> allProducts.filter { it.id in listOf("p4", "p5", "p11", "p12") }
+                        "snack" -> allProducts.filter { it.id in listOf("p6", "p10", "p14", "p16") }
+                        else -> allProducts
+                    }
         productAdapter.updateProducts(filteredProducts)
     }
 }

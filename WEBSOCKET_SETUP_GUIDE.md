@@ -43,7 +43,7 @@ npm start
 #### Langkah 3: Update IP Address di Android
 ```kotlin
 // Di ShippingTrackingActivity.kt, ganti IP address:
-private const val WEBSOCKET_URL = "ws://192.168.1.100:8080/tracking"
+private const val WEBSOCKET_URL = "ws://192.168.1.19:8080/tracking"
 // Ganti 192.168.1.100 dengan IP komputer Anda
 ```
 
