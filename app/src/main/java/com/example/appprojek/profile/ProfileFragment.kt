@@ -30,6 +30,12 @@ class ProfileFragment : Fragment() {
         return binding.root
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Reload latest session data in case EditProfileActivity updated it
+        loadUserData()
+    }
+
     private fun setupUI() {
         binding.toolbar.visibility = View.GONE // Hide toolbar in fragment
         binding.btnEditProfile.setOnClickListener {
@@ -59,7 +65,8 @@ class ProfileFragment : Fragment() {
         if (user != null) {
             binding.tvUserName.text = user.name
             binding.tvUserEmail.text = user.email
-            binding.tvUserPhone.text = user.address
+            binding.tvUserPhone.text = user.phone
+            binding.tvUserAddress.text = user.address
         } else {
             startActivity(Intent(requireContext(), LoginActivity::class.java))
             requireActivity().finish()

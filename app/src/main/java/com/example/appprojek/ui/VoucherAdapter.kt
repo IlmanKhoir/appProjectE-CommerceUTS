@@ -68,7 +68,7 @@ class VoucherAdapter(
         }
 
         private fun formatDate(timestamp: Long): String {
-            val sdf = SimpleDateFormat("dd MMM yyyy", Locale("id", "ID"))
+            val sdf = SimpleDateFormat("dd MMM yyyy", Locale.forLanguageTag("id-ID"))
             return sdf.format(Date(timestamp))
         }
 

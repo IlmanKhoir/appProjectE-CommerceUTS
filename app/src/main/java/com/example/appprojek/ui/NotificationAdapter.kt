@@ -79,7 +79,7 @@ class NotificationAdapter(
                 diff < 3600000 -> "${diff / 60000} menit lalu"
                 diff < 86400000 -> "${diff / 3600000} jam lalu"
                 else -> {
-                    val sdf = SimpleDateFormat("dd MMM yyyy", Locale("id", "ID"))
+                    val sdf = SimpleDateFormat("dd MMM yyyy", Locale.forLanguageTag("id-ID"))
                     sdf.format(Date(timestamp))
                 }
             }

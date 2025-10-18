@@ -87,13 +87,14 @@ class RegisterActivity : AppCompatActivity() {
                             "RegisterActivity",
                             "Register success user_id=${'$'}{result.user_id} email=${'$'}{result.email}"
                     )
-                    // Save user with phone & address into session (server may echo them)
-                    authManager.saveBackendUser(
-                            result.user_id,
-                            result.email,
-                            result.phone,
-                            result.address
-                    )
+            // Save user into local session (use named args to avoid ordering mistakes)
+            authManager.saveBackendUser(
+                userId = result.user_id ?: -1,
+                email = result.email ?: "",
+                name = result.name,
+                phone = result.phone,
+                address = result.address
+            )
                     Toast.makeText(this@RegisterActivity, "Registrasi berhasil", Toast.LENGTH_SHORT)
                             .show()
                     startActivity(Intent(this@RegisterActivity, MainActivity::class.java))

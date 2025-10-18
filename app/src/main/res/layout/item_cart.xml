@@ -30,6 +30,17 @@
         app:layout_constraintTop_toTopOf="parent"
         android:textStyle="bold" />
 
+    <ImageButton
+        android:id="@+id/btnRemove"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:contentDescription="Hapus"
+        android:backgroundTint="@color/transparent"
+        android:src="@drawable/ic_delete"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/itemSubtotal"
+        android:padding="8dp" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
 
 

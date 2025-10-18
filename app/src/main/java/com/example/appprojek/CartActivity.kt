@@ -27,8 +27,14 @@ class CartActivity : AppCompatActivity() {
 
         val recycler = findViewById<RecyclerView>(R.id.recyclerCart)
         recycler.layoutManager = LinearLayoutManager(this)
-        val items = CartManager.getItems()
-        recycler.adapter = CartAdapter(items)
+        lateinit var adapter: com.example.appprojek.ui.CartAdapter
+        adapter = com.example.appprojek.ui.CartAdapter(CartManager.getItems().toMutableList()) { productId ->
+            CartManager.removeOne(productId)
+            adapter.updateItems(CartManager.getItems())
+            val totalText = findViewById<TextView>(R.id.textTotal)
+            totalText.text = "Total: Rp %,d".format(CartManager.getTotalRupiah()).replace(',', '.')
+        }
+        recycler.adapter = adapter
 
         val totalText = findViewById<TextView>(R.id.textTotal)
         totalText.text = "Total: Rp %,d".format(CartManager.getTotalRupiah()).replace(',', '.')

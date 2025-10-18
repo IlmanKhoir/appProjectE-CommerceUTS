@@ -67,11 +67,11 @@ class LoginActivity : AppCompatActivity() {
 
                 if (result.success && result.user_id != null && result.email != null) {
             authManager.saveBackendUser(
-                result.user_id,
-                result.email,
-                result.name,
-                result.phone,
-                result.address
+                userId = result.user_id ?: -1,
+                email = result.email ?: "",
+                name = result.name,
+                phone = result.phone,
+                address = result.address
             )
                     Toast.makeText(this@LoginActivity, "Login berhasil", Toast.LENGTH_SHORT).show()
                     startActivity(Intent(this@LoginActivity, MainActivity::class.java))

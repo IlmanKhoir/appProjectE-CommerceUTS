@@ -1,7 +1,7 @@
-# Shipping Tracking dengan OpenStreetMap dan WebSocket
+# Shipping Tracking (Mock Mode by default)
 
 ## Deskripsi
-Fitur tracking pengiriman yang menampilkan peta dengan mobil box yang berjalan sesuai rute menggunakan OpenStreetMap dan WebSocket untuk real-time tracking.
+Fitur tracking pengiriman yang menampilkan peta dengan mobil box yang berjalan sesuai rute. Aplikasi ini menggunakan mock/simulasi data secara default sehingga tidak memerlukan server WebSocket untuk testing UI atau demo.
 
 ## Fitur Utama
 - **Peta Real-time**: Menggunakan OpenStreetMap untuk menampilkan peta
@@ -20,7 +20,9 @@ Fitur tracking pengiriman yang menampilkan peta dengan mobil box yang berjalan s
 - `TextView`: Status koneksi dan informasi rute
 
 ### Activity (ShippingTrackingActivity.kt)
-- **WebSocket Client**: Menggunakan OkHttp WebSocket
+- **Mode Default**: Mock data/simulasi (tidak menggunakan WebSocket)
+  - ShippingTrackingActivity menghasilkan update lokasi, status, dan route secara lokal untuk keperluan demo.
+- **Optional (enable WebSocket)**: ---------------
 - **Map Controller**: Mengontrol peta dan marker
 - **Location Updates**: Update posisi driver secara real-time
 - **Route Rendering**: Menampilkan rute dengan polyline
@@ -58,11 +60,11 @@ Pastikan WebSocket server Anda mengirim data dalam format JSON:
 }
 ```
 
-### 2. Update WebSocket URL
-Ubah URL WebSocket di `ShippingTrackingActivity.kt`:
-```kotlin
-private const val WEBSOCKET_URL = "ws://your-server.com:8080/tracking"
-```
+### Opsional: mengaktifkan WebSocket (untuk production/testing dengan server)
+Secara default aplikasi menggunakan mock data. Jika Anda ingin menghubungkan ke server WebSocket nyata:
+
+1. Perbarui `ShippingTrackingActivity.kt` untuk menggunakan URL server Anda dan implementasikan WebSocket client (OkHttp) atau revert ke versi WebSocket asli.
+2. Pastikan server mengirim data dalam format JSON seperti dijelaskan di bagian "Format Data WebSocket".
 
 ### 3. Jalankan Activity
 ```kotlin
@@ -142,28 +144,20 @@ mapController.setZoom(15.0)  // Ubah level zoom
 - Handle permission request dengan proper
 
 ## Testing
-Untuk testing tanpa WebSocket server, Anda bisa menggunakan mock data:
+Mock mode berjalan otomatis dan tidak memerlukan setup server. Jalankan activity `ShippingTrackingActivity` dan Anda akan melihat update mock yang muncul secara periodik (lokasi, status, route).
 
-```kotlin
-// Simulate location updates
-private fun simulateLocationUpdates() {
-    val handler = Handler(Looper.getMainLooper())
-    val runnable = object : Runnable {
-        override fun run() {
-            // Mock location data
-            val mockLat = -6.2088 + (Math.random() - 0.5) * 0.01
-            val mockLng = 106.8456 + (Math.random() - 0.5) * 0.01
-            
-            updateDriverLocation(mockLat, mockLng)
-            handler.postDelayed(this, 3000) // Update setiap 3 detik
-        }
-    }
-    handler.post(runnable)
-}
-```
+Jika Anda ingin menguji WebSocket live, ikuti langkah di bagian "Opsional: mengaktifkan WebSocket".
 
 ## Catatan Penting
 - Pastikan WebSocket server mendukung CORS jika diperlukan
 - Gunakan HTTPS/WSS untuk production
 - Implement proper error handling untuk network issues
 - Consider battery optimization untuk real-time updates
+
+## Legacy / Network helper
+The project currently runs in mock mode by default. A small network helper `ApiClient.kt` remains in the codebase at `app/src/main/java/com/example/appprojek/network/ApiClient.kt`.
+
+- Purpose: convenience OkHttp wrapper used when connecting to a real backend.
+- Current status: legacy/unused by default (repositories use an in-memory DummyDatabase). Keep this file if you plan to re-enable network mode later. To make the intent explicit you may rename it to `ApiClient.legacy.kt`.
+
+See `WEBSOCKET_CODE_REPORT.md` in the repo root for a full status report and recommended cleanup steps.

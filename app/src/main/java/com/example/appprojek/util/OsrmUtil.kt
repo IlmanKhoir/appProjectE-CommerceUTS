@@ -1,30 +1,27 @@
 package com.example.appprojek.util
 
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import org.json.JSONObject
 import org.osmdroid.util.GeoPoint
 
 object OsrmUtil {
-    private val client = OkHttpClient()
-    private const val OSRM_URL = "https://router.project-osrm.org/match/v1/driving/"
-
+    // Return a simple interpolated route between input points to simulate OSRM snapping
     fun matchRoute(points: List<GeoPoint>): List<GeoPoint> {
-        val coordString = points.joinToString(";") { "${it.longitude},${it.latitude}" }
-        val url = "$OSRM_URL$coordString?geometries=geojson"
-        val request = Request.Builder().url(url).build()
-        client.newCall(request).execute().use { response ->
-            val body = response.body?.string() ?: return emptyList()
-            val json = JSONObject(body)
-            val geometry = json
-                .getJSONArray("matchings")
-                .optJSONObject(0)
-                ?.getJSONObject("geometry")
-                ?.getJSONArray("coordinates") ?: return emptyList()
-            return (0 until geometry.length()).map { i ->
-                val arr = geometry.getJSONArray(i)
-                GeoPoint(arr.getDouble(1), arr.getDouble(0))
+        if (points.size <= 2) return points
+        val result = mutableListOf<GeoPoint>()
+        for (i in 0 until points.size - 1) {
+            val a = points[i]
+            val b = points[i + 1]
+            result.add(a)
+            // add 5 intermediate points
+            val steps = 5
+            for (s in 1..steps) {
+                val t = s.toDouble() / (steps + 1)
+                val lat = a.latitude + (b.latitude - a.latitude) * t
+                val lon = a.longitude + (b.longitude - a.longitude) * t
+                result.add(GeoPoint(lat, lon))
             }
         }
+        // add last
+        result.add(points.last())
+        return result
     }
 }

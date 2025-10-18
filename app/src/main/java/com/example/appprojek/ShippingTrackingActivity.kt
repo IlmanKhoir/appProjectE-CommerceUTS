@@ -17,7 +17,7 @@ import com.example.appprojek.MainActivity
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.snackbar.Snackbar
 import java.util.concurrent.TimeUnit
-import okhttp3.*
+import java.util.concurrent.Executors
 import org.json.JSONObject
 import org.osmdroid.api.IMapController
 import org.osmdroid.config.Configuration
@@ -36,14 +36,19 @@ class ShippingTrackingActivity : AppCompatActivity() {
     private lateinit var routeInfoOverlay: View
     private lateinit var driverInfoCard: View
 
-    // WebSocket
-    private lateinit var webSocket: WebSocket
-    private lateinit var client: OkHttpClient
+    // WebSocket (mocked)
+    private var mockHandler: Handler? = null
+    private var mockRunnable: Runnable? = null
 
     // Map markers and polylines
     private var driverMarker: Marker? = null
     private var destinationMarker: Marker? = null
     private var routePolyline: Polyline? = null
+
+    // Executors and handlers
+    private val routeExecutor = Executors.newSingleThreadExecutor()
+    private var locationHandler: Handler? = null
+    private var locationRunnable: Runnable? = null
 
     // Location data
     private var driverLocation: GeoPoint? = null
@@ -53,10 +58,8 @@ class ShippingTrackingActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "ShippingTracking"
         private const val LOCATION_PERMISSION_REQUEST_CODE = 1001
-        // Ganti dengan IP address komputer Anda yang menjalankan server
-       private const val WEBSOCKET_URL = "ws://192.168.1.19/tracking"
-        // Fallback untuk testing tanpa server
-    private const val USE_MOCK_DATA = true
+        // Using mock data by default (no WebSocket)
+        private const val USE_MOCK_DATA = true
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -238,63 +241,49 @@ class ShippingTrackingActivity : AppCompatActivity() {
     }
 
     private fun setupWebSocket() {
-        client = OkHttpClient.Builder().readTimeout(0, TimeUnit.MILLISECONDS).build()
-
-        val request = Request.Builder().url(WEBSOCKET_URL).build()
-
-        webSocket =
-            client.newWebSocket(
-                request,
-                object : WebSocketListener() {
-                    override fun onOpen(webSocket: WebSocket, response: Response) {
-                        runOnUiThread {
-                            connectionStatus.findViewById<android.widget.TextView>(
-                                com.example.appprojek.R.id.connectionStatus
-                            )
-                                .text = "Terhubung"
-                            connectionStatus.setBackgroundColor(
-                                ContextCompat.getColor(
-                                    this@ShippingTrackingActivity,
-                                    com.example.appprojek.R.color.success_color
-                                )
-                            )
-                            Log.d(TAG, "WebSocket connected")
-                        }
+        // Simulate a WebSocket/server by posting JSON messages periodically
+        mockHandler = Handler(Looper.getMainLooper())
+        mockRunnable = object : Runnable {
+            var step = 0
+            override fun run() {
+                try {
+                    val message = when (step % 3) {
+                        0 -> JSONObject().apply {
+                            put("type", "location_update")
+                            put("latitude", -6.2088 + 0.001 * (step % 10))
+                            put("longitude", 106.8456 + 0.001 * (step % 10))
+                            put("driver_name", "Driver Demo")
+                            put("eta", "${10 - (step % 10)} menit")
+                            put("vehicle_info", "Motor - AB1234XY")
+                        }.toString()
+                        1 -> JSONObject().apply {
+                            put("type", "status_update")
+                            put("status", "in_transit")
+                            put("message", "Driver sedang dalam perjalanan")
+                        }.toString()
+                        else -> JSONObject().apply {
+                            put("type", "route_update")
+                            val arr = org.json.JSONArray()
+                            arr.put(JSONObject().apply { put("lat", -6.2088); put("lng", 106.8456) })
+                            arr.put(JSONObject().apply { put("lat", -6.2000 + 0.001 * (step % 10)); put("lng", 106.8550 + 0.001 * (step % 10)) })
+                            put("route", arr)
+                        }.toString()
                     }
 
-                    override fun onMessage(webSocket: WebSocket, text: String) {
-                        runOnUiThread { handleWebSocketMessage(text) }
-                    }
-
-                    override fun onFailure(
-                        webSocket: WebSocket,
-                        t: Throwable,
-                        response: Response?
-                    ) {
-                        runOnUiThread {
-                            connectionStatus.findViewById<android.widget.TextView>(
-                                com.example.appprojek.R.id.connectionStatus
-                            )
-                                .text = "Terputus"
-                            connectionStatus.setBackgroundColor(
-                                ContextCompat.getColor(
-                                    this@ShippingTrackingActivity,
-                                    com.example.appprojek.R.color.error_color
-                                )
-                            )
-                            Log.e(TAG, "WebSocket failed", t)
-
-                            // Retry connection after 5 seconds
-                            webSocket.close(1000, "Retrying...")
-                            mapView.postDelayed({ setupWebSocket() }, 5000)
-                        }
-                    }
-
-                    override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
-                        Log.d(TAG, "WebSocket closed: $code - $reason")
-                    }
+                    handleWebSocketMessage(message)
+                    step++
+                } catch (e: Exception) {
+                    // ignore errors in mock
                 }
-            )
+                mockHandler?.postDelayed(this, 2500)
+            }
+        }
+        // indicate connected
+        runOnUiThread {
+            connectionStatus.findViewById<android.widget.TextView>(com.example.appprojek.R.id.connectionStatus).text = "Terhubung (Mock)"
+            connectionStatus.setBackgroundColor(ContextCompat.getColor(this@ShippingTrackingActivity, com.example.appprojek.R.color.success_color))
+        }
+    mockRunnable?.let { runnable -> mockHandler?.post { runnable.run() } }
     }
 
     private fun handleWebSocketMessage(rawMessage: String) {
@@ -339,6 +328,7 @@ class ShippingTrackingActivity : AppCompatActivity() {
 
     private fun updateDriverLocation(lat: Double, lng: Double) {
         val newLocation = GeoPoint(lat, lng)
+        val previous = driverLocation
         driverLocation = newLocation
 
         // Update or create driver marker
@@ -353,8 +343,20 @@ class ShippingTrackingActivity : AppCompatActivity() {
         driverMarker?.position = newLocation
         driverMarker?.title = "Driver Location"
 
-        // Center map on driver location
-        mapController.animateTo(newLocation)
+        // Center map on driver location only if moved sufficiently
+        val shouldAnimate = if (previous == null) true else {
+            val dLat = Math.abs(previous.latitude - newLocation.latitude)
+            val dLon = Math.abs(previous.longitude - newLocation.longitude)
+            // threshold ~11 meters in degrees (~0.0001)
+            dLat > 0.0001 || dLon > 0.0001
+        }
+        if (shouldAnimate) {
+            try {
+                mapController.animateTo(newLocation)
+            } catch (e: Exception) {
+                Log.w(TAG, "animateTo failed", e)
+            }
+        }
 
         // PERBAIKAN: Update route info dengan parameter
         if (destinationLocation != null) {
@@ -368,7 +370,8 @@ class ShippingTrackingActivity : AppCompatActivity() {
     }
 
     private fun updateRoute(route: List<GeoPoint>) {
-        Thread {
+        // offload potential heavy snapping to single-thread executor
+        routeExecutor.submit {
             val snappedRoute = try {
                 com.example.appprojek.util.OsrmUtil.matchRoute(route)
             } catch (e: Exception) {
@@ -411,9 +414,14 @@ class ShippingTrackingActivity : AppCompatActivity() {
                     }
                 }
 
-                mapView.invalidate()
+                // invalidate map once per route update
+                try {
+                    mapView.invalidate()
+                } catch (e: Exception) {
+                    Log.w(TAG, "mapView.invalidate failed", e)
+                }
             }
-        }.start()
+        }
     }
 
     private fun calculateDistanceAndTime(start: GeoPoint, end: GeoPoint): Pair<String, String> {
@@ -474,7 +482,9 @@ class ShippingTrackingActivity : AppCompatActivity() {
     }
 
     private fun startMockLocationUpdates() {
-        val handler = Handler(Looper.getMainLooper())
+        if (locationHandler != null) return // already started
+        locationHandler = Handler(Looper.getMainLooper())
+        val handler = locationHandler!!
         val mockRoute = listOf(
             GeoPoint(-6.175392, 106.827153), // Monas
             GeoPoint(-6.181616, 106.828216), // Gambir
@@ -488,9 +498,9 @@ class ShippingTrackingActivity : AppCompatActivity() {
 
         var currentIndex = 0
 
-        val runnable =
-            object : Runnable {
-                override fun run() {
+        locationRunnable = object : Runnable {
+            override fun run() {
+                try {
                     if (currentIndex < mockRoute.size) {
                         val location = mockRoute[currentIndex]
                         updateDriverLocation(location.latitude, location.longitude)
@@ -527,10 +537,13 @@ class ShippingTrackingActivity : AppCompatActivity() {
                                 Toast.LENGTH_LONG).show()
                         }
                     }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Error in mock location runnable", e)
                 }
             }
+        }
 
-        handler.post(runnable)
+    locationRunnable?.let { runnable -> handler.post { runnable.run() } }
     }
 
     override fun onRequestPermissionsResult(
@@ -565,6 +578,25 @@ class ShippingTrackingActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // Tidak perlu menutup WebSocket jika menggunakan mock data
+        // Clean up handlers/executors for mock updates
+        try {
+            mockRunnable?.let { runnable -> mockHandler?.removeCallbacks(runnable) }
+            mockHandler = null
+            mockRunnable = null
+        } catch (e: Exception) {
+            Log.w(TAG, "Error clearing mockHandler", e)
+        }
+        try {
+            locationRunnable?.let { runnable -> locationHandler?.removeCallbacks(runnable) }
+            locationHandler = null
+            locationRunnable = null
+        } catch (e: Exception) {
+            Log.w(TAG, "Error clearing locationHandler", e)
+        }
+        try {
+            routeExecutor.shutdownNow()
+        } catch (e: Exception) {
+            Log.w(TAG, "Error shutting down routeExecutor", e)
+        }
     }
 }

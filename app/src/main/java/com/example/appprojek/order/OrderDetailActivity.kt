@@ -15,7 +15,12 @@ class OrderDetailActivity : AppCompatActivity() {
                 val toolbar = findViewById<com.google.android.material.appbar.MaterialToolbar>(R.id.topAppBar)
                 toolbar.setNavigationOnClickListener { onBackPressedDispatcher.onBackPressed() }
 
-                order = intent.getParcelableExtra("order")
+                                order = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                                        intent.getParcelableExtra("order", com.example.appprojek.model.Order::class.java)
+                                } else {
+                                        @Suppress("DEPRECATION")
+                                        intent.getParcelableExtra("order")
+                                }
 
                 render()
 

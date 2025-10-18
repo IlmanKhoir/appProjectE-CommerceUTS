@@ -61,6 +61,7 @@ class ProfileActivity : AppCompatActivity() {
             binding.tvUserName.text = user.name
             binding.tvUserEmail.text = user.email
             binding.tvUserPhone.text = user.phone
+            binding.tvUserAddress.text = user.address
         } else {
             // User not logged in, redirect to login
             startActivity(Intent(this, LoginActivity::class.java))

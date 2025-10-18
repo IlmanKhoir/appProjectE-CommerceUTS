@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.appprojek.category.CategoryActivity
 import com.example.appprojek.model.Category
 import com.example.appprojek.model.Product
+import com.example.appprojek.mock.MockDataProvider
 import com.example.appprojek.product.ProductDetailActivity
 import com.example.appprojek.ui.BannerAdapter
 import com.example.appprojek.ui.BannerItem
@@ -40,7 +41,7 @@ class HomeFragment : Fragment() {
                 try {
                         setupBanners(view)
                         setupCategories(view)
-                        products = getProducts()
+                        products = MockDataProvider.getProducts()
                         val recycler = view.findViewById<RecyclerView>(R.id.recyclerGrid)
                         recycler.layoutManager = GridLayoutManager(view.context, 2)
                         adapter = ProductAdapter(
@@ -64,14 +65,14 @@ class HomeFragment : Fragment() {
                         )
                         recycler.adapter = adapter
                                         val etSearch = view.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etSearchHome)
-                                        val btnSearch = view.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnSearchHome)
-                                        btnSearch.setOnClickListener {
-                                                val query = etSearch.text?.toString() ?: ""
-                                                val filtered = products.filter {
-                                                        it.name.contains(query, ignoreCase = true) ||
+                                        val searchLayout = view.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.searchLayout)
+                                        searchLayout.setEndIconOnClickListener {
+                                            val query = etSearch.text?.toString() ?: ""
+                                            val filtered = products.filter {
+                                                it.name.contains(query, ignoreCase = true) ||
                                                         it.description.contains(query, ignoreCase = true)
-                                                }
-                                                adapter.updateProducts(filtered)
+                                            }
+                                            adapter.updateProducts(filtered)
                                         }
                 } catch (e: Exception) {
                         Toast.makeText(
@@ -82,18 +83,7 @@ class HomeFragment : Fragment() {
                 }
         }
 
-        private fun getProducts(): List<Product> {
-                return listOf(
-                        Product("p1", "Susu Kotak 1L", 23000, imageResId = R.drawable.susu_kotak, description = "Susu segar dalam kemasan kotak"),
-                        Product("p2", "Roti Tawar", 18000, imageResId = R.drawable.roti_tawar, description = "Roti tawar lembut dan segar"),
-                        Product("p3", "Mie Instan Goreng", 3500, imageResId = R.drawable.mie_instant, description = "Mie instan rasa goreng"),
-                        Product("p4", "Minyak Goreng 1L", 15500, imageResId = R.drawable.minyak_goreng, description = "Minyak goreng berkualitas tinggi"),
-                        Product("p5", "Beras Premium 5kg", 79000, imageResId = R.drawable.beras_premium, description = "Beras premium kualitas terbaik"),
-                        Product("p6", "Snack Kentang", 12000, imageResId = R.drawable.snack_kentang, description = "Snack kentang renyah"),
-                        Product("p7", "Teh Botol", 5000, imageResId = R.drawable.teh_botol, description = "Teh botol segar"),
-                        Product("p8", "Kopi Susu", 8000, imageResId = R.drawable.kopi_susu, description = "Kopi susu nikmat")
-                )
-        }
+        // products are provided by MockDataProvider; removed inline list
         }
 
     // setupProducts dihapus, logika grid sudah di onViewCreated

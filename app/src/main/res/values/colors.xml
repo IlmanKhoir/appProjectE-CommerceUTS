@@ -25,5 +25,6 @@
     <color name="error_color">#FFF44336</color>
     <color name="background_overlay">#80000000</color>
     <color name="light_gray">#FFEEEEEE</color>
+    <color name="transparent">#00000000</color>
 
 </resources>
