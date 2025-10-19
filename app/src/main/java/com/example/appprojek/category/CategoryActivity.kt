@@ -66,7 +66,7 @@ class CategoryActivity : AppCompatActivity() {
                 Product("p8", "Kopi Susu", 8000, description = "Kopi susu nikmat", imageResId = R.drawable.kopi_susu),
                 Product("p9", "Air Mineral 600ml", 3000, description = "Air mineral kemasan botol", imageResId = R.drawable.airmineral),
                 Product("p13", "Yogurt Strawberry", 12000, description = "Yogurt rasa strawberry", imageResId = R.drawable.yogurtstrawberry),
-                Product("p15", "Jus Jeruk", 8000, description = "Jus jeruk segar"),
+                Product("p15", "Jus Jeruk", 8000, description = "Jus jeruk segar", imageResId = R.drawable.jusjeruk),
 
                 // Dapur & Masak
                 Product("p4", "Minyak Goreng 1L", 15500, description = "Minyak goreng berkualitas tinggi", imageResId = R.drawable.minyak_goreng),

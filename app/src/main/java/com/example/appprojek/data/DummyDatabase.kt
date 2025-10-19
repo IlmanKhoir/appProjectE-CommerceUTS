@@ -9,6 +9,14 @@ import android.util.Log
  * Not persisted across process restarts.
  */
 object DummyDatabase {
+        /*
+            Catatan santai:
+            - Ini in-memory DB buat development/demo.
+            - Data nggak persist setelah app di-kill.
+            - updateProfile dibuat toleran: kalau nggak nemu user, bakal bikin record baru supaya UI nggak crash.
+            - Kalau mau reset user demo, restart app atau ubah kode init() seed user di bawah.
+            - Debug tip: buka logcat dan cari tag "DummyDatabase" buat pesan fallback atau info.
+        */
     private data class UserRecord(
         val id: Int,
         var email: String,

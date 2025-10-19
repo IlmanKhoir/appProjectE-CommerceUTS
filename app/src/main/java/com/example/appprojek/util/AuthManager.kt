@@ -33,6 +33,13 @@ class AuthManager(private val context: Context) {
         }
     }
 
+    /*
+      Catatan cepat:
+      - Kalau app crash di device nyata saat buka profile, kemungkinan EncryptedSharedPreferences gagal.
+      - Untuk cek errornya jalankan: adb logcat | Select-String -Pattern "AuthManager" -CaseSensitive
+      - Ini udah pake try/catch fallback, jadi biasanya nggak bakal crash, tapi data bakal disimpan di prefs biasa.
+    */
+
     suspend fun login(request: LoginRequest): Result<String> =
             withContext(Dispatchers.IO) {
                 try {
