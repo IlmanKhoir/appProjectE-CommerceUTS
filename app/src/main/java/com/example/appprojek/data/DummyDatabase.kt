@@ -80,9 +80,23 @@ object DummyDatabase {
             Log.w("DummyDatabase", "updateProfile: no record for id=$userId, fallback lookup by email=${email} -> ${rec != null}")
         }
 
+        // If still not found, create a new record so UI/profile updates don't fail
         if (rec == null) {
-            Log.w("DummyDatabase", "updateProfile: failed to find user record for userId=$userId and email=$email")
-            return false
+            Log.w("DummyDatabase", "updateProfile: failed to find user record for userId=$userId and email=$email — creating new record")
+            val newId = if (userId > 0) {
+                // ensure nextUserId stays ahead
+                if (userId >= nextUserId) {
+                    nextUserId = userId + 1
+                }
+                userId
+            } else {
+                nextUserId++
+            }
+            val newEmail = email ?: "user${newId}@local"
+            val newRec = UserRecord(newId, newEmail, name ?: "", phone ?: "", address ?: "", password = "")
+            usersByEmail[newEmail] = newRec
+            rec = newRec
+            Log.i("DummyDatabase", "updateProfile: created fallback user record id=${rec.id} email=${rec.email}")
         }
 
         // If email is changing, we need to update the map key as well.

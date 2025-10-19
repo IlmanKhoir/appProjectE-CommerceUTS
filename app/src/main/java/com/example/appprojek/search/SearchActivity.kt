@@ -12,11 +12,24 @@ import com.example.appprojek.model.Product
 import com.example.appprojek.product.ProductDetailActivity
 import com.example.appprojek.ui.ProductAdapter
 import com.example.appprojek.R
+import com.google.android.material.chip.Chip
+import android.content.Context
+import android.os.Handler
+import android.os.Looper
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
 
 class SearchActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySearchBinding
     private lateinit var productAdapter: ProductAdapter
     private val allProducts = mutableListOf<Product>()
+    private val spanCount = 2
+    private val PREFS = "search_prefs"
+    private val KEY_RECENT = "recent_list"
+    private val MAX_RECENT = 6
+    private val handler = Handler(Looper.getMainLooper())
+    private var debounceRunnable: Runnable? = null
+    private val DEBOUNCE_MS = 350L
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,14 +44,45 @@ class SearchActivity : AppCompatActivity() {
     private fun setupUI() {
     binding.toolbar.setNavigationOnClickListener { finish() }
 
-    binding.btnSearch.setOnClickListener {
-        val query = binding.etSearch.text?.toString() ?: ""
-        filterProducts(query)
+    // Real-time search with TextWatcher
+    binding.etSearch.addTextChangedListener(object : android.text.TextWatcher {
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            // debounce to avoid filtering on every keystroke
+            debounceRunnable?.let { handler.removeCallbacks(it) }
+            val q = s?.toString() ?: ""
+            binding.progressSearch.visibility = android.view.View.VISIBLE
+            debounceRunnable = Runnable {
+                binding.progressSearch.visibility = android.view.View.GONE
+                // Show filtered recent suggestions
+                filterRecentSuggestions(q)
+                filterProducts(q)
+            }
+            handler.postDelayed(debounceRunnable!!, DEBOUNCE_MS)
+        }
+        override fun afterTextChanged(s: android.text.Editable?) {}
+    })
+
+    // Handle IME search action (submit)
+    binding.etSearch.setOnEditorActionListener { v, actionId, _ ->
+        if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+            val q = v.text?.toString() ?: ""
+            // hide keyboard
+            val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(v.windowToken, 0)
+            // immediate search and save
+            debounceRunnable?.let { handler.removeCallbacks(it) }
+            binding.progressSearch.visibility = android.view.View.VISIBLE
+            handler.postDelayed({
+                binding.progressSearch.visibility = android.view.View.GONE
+                filterProducts(q)
+                if (q.isNotBlank()) saveRecentQuery(q)
+            }, 100)
+            true
+        } else false
     }
 
-    binding.btnClear.setOnClickListener { binding.etSearch.text?.clear(); filterProducts("") }
-
-    binding.recyclerProducts.layoutManager = GridLayoutManager(this, 2)
+    binding.recyclerProducts.layoutManager = GridLayoutManager(this, spanCount)
     productAdapter =
         ProductAdapter(
             emptyList(),
@@ -57,6 +101,14 @@ class SearchActivity : AppCompatActivity() {
             }
         )
     binding.recyclerProducts.adapter = productAdapter
+    // spacing decoration
+    val spacingPx = (8 * resources.displayMetrics.density).toInt()
+    binding.recyclerProducts.addItemDecoration(com.example.appprojek.ui.GridSpacingItemDecoration(spanCount, spacingPx, true))
+
+    // Note: clear button handled by TextInputLayout end icon in layout if needed
+
+    // Recent searches setup
+    loadRecentSearches()
     }
 
     private fun loadProducts() {
@@ -87,6 +139,8 @@ class SearchActivity : AppCompatActivity() {
     private fun filterProducts(query: String) {
         if (query.isEmpty()) {
             productAdapter.updateProducts(allProducts)
+            productAdapter.setHighlightQuery(null)
+            binding.tvNoResults.visibility = android.view.View.GONE
         } else {
             val filteredProducts =
                     allProducts.filter { product ->
@@ -94,6 +148,69 @@ class SearchActivity : AppCompatActivity() {
                                 product.description.contains(query, ignoreCase = true)
                     }
             productAdapter.updateProducts(filteredProducts)
+            productAdapter.setHighlightQuery(query)
+            binding.tvNoResults.visibility = if (filteredProducts.isEmpty()) android.view.View.VISIBLE else android.view.View.GONE
+            // Save to recent if not empty and not duplicate
+            if (query.isNotBlank()) saveRecentQuery(query)
         }
+    }
+
+    private fun saveRecentQuery(query: String) {
+        val prefs = getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val current = prefs.getString(KEY_RECENT, "") ?: ""
+        val items = if (current.isBlank()) mutableListOf<String>() else current.split("||").toMutableList()
+        // remove existing duplicate
+        items.removeAll { it.equals(query, ignoreCase = true) }
+        items.add(0, query)
+        while (items.size > MAX_RECENT) items.removeLast()
+        prefs.edit().putString(KEY_RECENT, items.joinToString("||")).apply()
+        renderRecent(items)
+    }
+
+    private fun loadRecentSearches() {
+        val prefs = getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val current = prefs.getString(KEY_RECENT, "") ?: ""
+        val items = if (current.isBlank()) listOf() else current.split("||").filter { it.isNotBlank() }
+        renderRecent(items.toMutableList())
+    }
+
+    private fun renderRecent(items: MutableList<String>) {
+        val group = binding.chipGroupRecent
+        group.removeAllViews()
+        if (items.isEmpty()) {
+            binding.tvRecentLabel.visibility = android.view.View.GONE
+            binding.chipGroupRecent.visibility = android.view.View.GONE
+            binding.btnClearHistory.visibility = android.view.View.GONE
+            return
+        }
+        binding.tvRecentLabel.visibility = android.view.View.VISIBLE
+        binding.chipGroupRecent.visibility = android.view.View.VISIBLE
+        binding.btnClearHistory.visibility = android.view.View.VISIBLE
+        for (q in items) {
+            val chip = Chip(this)
+            chip.text = q
+            chip.isClickable = true
+            chip.setOnClickListener {
+                binding.etSearch.setText(q)
+                filterProducts(q)
+            }
+            group.addView(chip)
+        }
+        binding.btnClearHistory.setOnClickListener {
+            getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(KEY_RECENT).apply()
+            renderRecent(mutableListOf())
+        }
+    }
+
+    private fun filterRecentSuggestions(query: String) {
+        if (query.isBlank()) {
+            loadRecentSearches()
+            return
+        }
+        val prefs = getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val current = prefs.getString(KEY_RECENT, "") ?: ""
+        val items = if (current.isBlank()) listOf() else current.split("||").filter { it.isNotBlank() }
+        val filtered = items.filter { it.contains(query, ignoreCase = true) }
+        renderRecent(filtered.toMutableList())
     }
 }

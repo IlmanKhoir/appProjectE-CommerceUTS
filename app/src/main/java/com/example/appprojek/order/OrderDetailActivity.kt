@@ -41,7 +41,6 @@ class OrderDetailActivity : AppCompatActivity() {
 
         private fun render() {
                 val o = order ?: return
-                findViewById<android.widget.TextView>(R.id.tvOrderId).text = "#${'$'}{o.orderId}"
                 findViewById<android.widget.TextView>(R.id.tvStatus).text = o.status.name
                 findViewById<android.widget.TextView>(R.id.tvAddress).text = o.shippingAddress
                 findViewById<android.widget.TextView>(R.id.tvPayment).text = o.paymentMethod
@@ -66,7 +65,7 @@ class OrderDetailActivity : AppCompatActivity() {
                 androidx.recyclerview.widget.RecyclerView.ViewHolder(itemView) {
                 fun bind(ci: com.example.appprojek.model.CartItem) {
                         itemView.findViewById<android.widget.TextView>(R.id.tvName).text = ci.product.name
-                        itemView.findViewById<android.widget.TextView>(R.id.tvQty).text = "x${'$'}{ci.quantity}"
+                        itemView.findViewById<android.widget.TextView>(R.id.tvQty).text = "x ${ci.quantity}"
                         itemView.findViewById<android.widget.TextView>(R.id.tvPrice).text =
                                 "Rp %,d".format(ci.product.priceRupiah).replace(',', '.')
                 }

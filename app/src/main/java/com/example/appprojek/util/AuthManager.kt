@@ -15,15 +15,22 @@ class AuthManager(private val context: Context) {
     private val gson = Gson()
 
     private val prefs by lazy {
-        val masterKey =
+        try {
+            val masterKey =
                 MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build()
-        EncryptedSharedPreferences.create(
+            EncryptedSharedPreferences.create(
                 context,
                 "auth_prefs_secure",
                 masterKey,
                 EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-        )
+            )
+        } catch (e: Exception) {
+            // Some devices/emulator images may not support the required keystore features.
+            // Fall back to regular SharedPreferences to avoid crash while preserving functionality.
+            android.util.Log.w("AuthManager", "EncryptedSharedPreferences unavailable, falling back: ${e.message}")
+            context.getSharedPreferences("auth_prefs_fallback", Context.MODE_PRIVATE)
+        }
     }
 
     suspend fun login(request: LoginRequest): Result<String> =
