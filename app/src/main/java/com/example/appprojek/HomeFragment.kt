@@ -47,6 +47,8 @@ class HomeFragment : Fragment() {
         }
 
         private fun setupProductsGrid(view: View) {
+                // buat grid produk, adapter, dan handler klik
+                // kalau mau debug: perhatikan toast "ditambahkan ke keranjang" setelah tekan tombol Add
                 products = MockDataProvider.getProducts()
                 val recycler = view.findViewById<RecyclerView>(R.id.recyclerGrid)
                 recycler.layoutManager = GridLayoutManager(requireContext(), 2)
@@ -71,6 +73,8 @@ class HomeFragment : Fragment() {
         }
 
         private fun setupSearchArea(view: View) {
+                // area pencarian: klik buka SearchActivity
+                // catatan: kalau SearchActivity gagal terbuka, cek logcat untuk stacktrace
                 val etSearch = view.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etSearchHome)
                 val searchLayout = view.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.searchLayout)
 
@@ -89,13 +93,14 @@ class HomeFragment : Fragment() {
         }
 
         private fun setupBanners(view: View) {
+                // banner auto-scroll sederhana. kalau mau matiin auto scroll, hapus postDelayed
                 val bannerRv = view.findViewById<RecyclerView>(R.id.recyclerBanner)
                 bannerRv.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false)
 
                 val banners = listOf(
-                        BannerItem("Promo Spesial", R.mipmap.ic_launcher),
-                        BannerItem("Gratis Ongkir", R.mipmap.ic_launcher),
-                        BannerItem("Flash Sale", R.mipmap.ic_launcher)
+                        BannerItem("Promo Spesial", R.drawable.promo1),
+                        BannerItem("Gratis Ongkir", R.drawable.promo2),
+                        BannerItem("Flash Sale", R.drawable.promo3)
                 )
 
                 bannerRv.adapter = BannerAdapter(banners)
@@ -118,6 +123,7 @@ class HomeFragment : Fragment() {
         }
 
         private fun setupCategories(view: View) {
+                // kategori horizontal. klik kategori -> buka CategoryActivity dengan extras
                 val categoryRv = view.findViewById<RecyclerView>(R.id.recyclerCategories)
                 categoryRv.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false)
 

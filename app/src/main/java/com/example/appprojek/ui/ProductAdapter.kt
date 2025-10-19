@@ -20,6 +20,14 @@ class ProductAdapter(
     // optional highlight query; adapter consumer should set this when filtering
     private var highlightQuery: String? = null
 
+        /*
+            Catatan singkat:
+            - Adapter ini yang nampilin item produk di grid.
+            - Fungsi `setHighlightQuery` dipake untuk nge-bold + nge-color nama produk yang cocok sama kata pencarian.
+            - Kalau gambar nggak muncul, cek resource id di Product.imageResId (default pake ic_launcher).
+            - Debug cepat: tambahin Log.d("ProductAdapter", "bind: ${product.name}") di bind()
+        */
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.item_product, parent, false)
         return ProductViewHolder(view)

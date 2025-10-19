@@ -96,33 +96,33 @@ class EditProfileActivity : AppCompatActivity() {
                                                                                 addressField.setText(display)
 
                                                                                 // Always save lat/lng to backend and send human-readable address if available
-                                                                                                                                                                val repo = UserRepository()
+                                                                                  val repo = UserRepository()
 
-                                                                                                                                                                val userIdInt = user.id.toIntOrNull()
-                                                                                                                                                                if (userIdInt == null) {
-                                                                                                                                                                        // session invalid
-                                                                                                                                                                        withContext(Dispatchers.Main) {
-                                                                                                                                                                                Toast.makeText(this@EditProfileActivity, "Sesi tidak valid. Silakan login ulang.", Toast.LENGTH_LONG).show()
-                                                                                                                                                                        }
-                                                                                                                                                                        progress.visibility = android.view.View.GONE
-                                                                                                                                                                        return@launch
-                                                                                                                                                                }
+                                                                                        val userIdInt = user.id.toIntOrNull()
+                                                                                                if (userIdInt == null) {
+                                                                                                // session invalid
+                                                                                                withContext(Dispatchers.Main) {
+                                                                                                Toast.makeText(this@EditProfileActivity, "Sesi tidak valid. Silakan login ulang.", Toast.LENGTH_LONG).show()
+                                                                                                }
+                                                                                         progress.visibility = android.view.View.GONE
+                                                                                        return@launch
+                                                                                        }
 
-                                                                                                                                                                                                                                                Log.i("EditProfile", "calling updateProfile userId=$userIdInt email=${user.email} address=$display lat=$lat lng=$lng")
+                                                                                        Log.i("EditProfile", "calling updateProfile userId=$userIdInt email=${user.email} address=$display lat=$lat lng=$lng")
 
-                                                                                                                                                                                                                                                val success = withContext(Dispatchers.IO) {
-                                                                                                                                                                                                                                                        repo.updateProfile(
-                                                                                                                                                                                                                                                                        userId = userIdInt,
-                                                                                                                                                                                                                                                                        email = user.email,
-                                                                                                                                                                                                                                                                        name = null,
-                                                                                                                                                                                                                                                                        phone = null,
-                                                                                                                                                                                                                                                                        address = display,
-                                                                                                                                                                                                                                                                        latitude = lat,
-                                                                                                                                                                                                                                                                        longitude = lng
-                                                                                                                                                                                                                                                        )
-                                                                                                                                                                                                                                                }
+                                                                                        val success = withContext(Dispatchers.IO) {
+                                                                                        repo.updateProfile(
+                                                                                        userId = userIdInt,
+                                                                                        email = user.email,
+                                                                                        name = null,
+                                                                                        phone = null,
+                                                                                        address = display,
+                                                                                        latitude = lat,
+                                                                                        longitude = lng
+                                                                                        )
+                                                                                        }
 
-                                                                                                                                                                                                                                                Log.i("EditProfile", "updateProfile returned: $success for userId=$userIdInt")
+                                                                                Log.i("EditProfile", "updateProfile returned: $success for userId=$userIdInt")
 
                                                                                 if (success) {
                                                                                         Toast.makeText(this@EditProfileActivity, "Lokasi tersimpan", Toast.LENGTH_SHORT).show()
@@ -242,5 +242,8 @@ class EditProfileActivity : AppCompatActivity() {
                 cancellationTokenSource.cancel()
         }
 }
+
+
+
 
 
